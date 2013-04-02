@@ -6,3 +6,21 @@ WebSearchEngineHW3/data/wiki
 WebSearchEngineHW3/data/.DS_Store
 
 *.conf
+
+WebSearchEngineHW3/data/temp/*
+
+WebSearchEngineHW3/data/corpus.graph
+
+WebSearchEngineHW3/data/wikitest/A
+
+WebSearchEngineHW3/data/wikitest/B
+
+WebSearchEngineHW3/data/wikitest/C
+
+*.conf
+
+*.conf
+
+WebSearchEngineHW3/conf/engine.conf
+
+WebSearchEngineHW3/conf/engine.conf
