@@ -1,6 +1,11 @@
 package edu.nyu.cs.cs2580;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import edu.nyu.cs.cs2580.SearchEngine.Options;
 
@@ -34,6 +39,65 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
   @Override
   public void prepare() throws IOException {
     System.out.println("Preparing " + this.getClass().getName());
+    
+    File corpusDirectory = new File(_options._corpusPrefix);
+    //returns if the corpus prefix is not a directory
+    if(!corpusDirectory.isDirectory()){
+    	System.out.println("dir");
+    	return;
+    }
+    
+    //maps page link to ID
+    Map<String, Integer> pages = new HashMap<String, Integer>();
+    int pageCount = 0;
+    for(File page : corpusDirectory.listFiles()){
+    	pages.put(page.getName(), ++pageCount);
+    }
+    
+    
+    //Maps Link ID to set of incoming links
+    Map<Integer, List<Integer>> incomingLinks = new HashMap<Integer, List<Integer>>();
+    //Maps Link ID to total outgoing links.
+    Map<Integer, Integer> outgoingLinksTotal = new HashMap<Integer, Integer>();
+    
+//    FileChannel channel = new RandomAccessFile("data/corpus.graph", "rw").getChannel();
+    
+    for(File page : corpusDirectory.listFiles()){
+    	
+    	HeuristicLinkExtractor extractor = new HeuristicLinkExtractor(page);
+    	String sourcePageLink = extractor.getLinkSource();
+    	Integer sourcePageID;
+    	
+    	if((sourcePageID = pages.get(sourcePageLink)) == null){
+    		continue;
+    	}
+    
+    	//System.out.println("#### Source : "+sourcePageLink+ "-->"+sourcePageID);
+    	
+    	String targetPageLink = null;
+    	int outgoingLinks = 0;
+    	
+    	while((targetPageLink = extractor.getNextInCorpusLinkTarget())!=null){
+    		Integer targetLinkID;
+    		if((targetLinkID = pages.get(targetPageLink)) == null){
+    			continue;
+        	}
+    		
+    		List<Integer> links;
+    		if((links = incomingLinks.get(targetLinkID)) == null){
+    			links = new ArrayList<Integer>();
+    			incomingLinks.put(targetLinkID, links);
+    		}
+    		
+    		links.add(sourcePageID);
+    		
+    		//System.out.println("Target : "+targetPageLink+ " : "+targetLinkID+"-->"+links);
+    		outgoingLinks++;
+    	}
+    	
+    	outgoingLinksTotal.put(sourcePageID, outgoingLinks);
+    }
+    
     return;
   }
 

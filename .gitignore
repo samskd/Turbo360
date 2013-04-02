@@ -1,2 +1,8 @@
 
 WebSearchEngineHW3/data/wiki
+
+*.class
+
+WebSearchEngineHW3/data/.DS_Store
+
+*.conf
