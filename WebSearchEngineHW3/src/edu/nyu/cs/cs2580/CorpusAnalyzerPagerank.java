@@ -1,8 +1,8 @@
 package edu.nyu.cs.cs2580;
 
-import java.io.BufferedWriter;
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,6 +22,8 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 
 	int linksBlockSize = 2000;
 	String tempFolder = "data/temp/";
+	String graphFile = "data/corpus.graph";
+	String pageRanksFile = "data/pageranks";
 
 	/**
 	 * This function processes the corpus as specified inside {@link _options}
@@ -54,9 +56,9 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 		if(!directory.exists()){ directory.mkdirs(); }
 
 
-		String tempOutgoingLinkCountFile = tempFolder+"outgoingLinksCount";
-		FileWriter fileWriter = new FileWriter(tempOutgoingLinkCountFile);
-		BufferedWriter bufferWriter = new BufferedWriter(fileWriter);
+//		String tempOutgoingLinkCountFile = tempFolder+"outgoingLinksCount";
+//		FileWriter fileWriter = new FileWriter(tempOutgoingLinkCountFile);
+//		BufferedWriter bufferWriter = new BufferedWriter(fileWriter);
 
 		int blockSize = linksBlockSize;
 		int blockNumber = 0;
@@ -78,7 +80,8 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 			}
 
 			//Maps Link ID to set of incoming links
-			Map<Integer, List<Integer>> incomingLinks = new HashMap<Integer, List<Integer>>();
+//			Map<Integer, List<Integer>> incomingLinks = new HashMap<Integer, List<Integer>>();
+			Map<Integer, List<Integer>> outgoingLinks = new HashMap<Integer, List<Integer>>();
 
 			for(File page : corpusDirectory.listFiles()){
 
@@ -94,7 +97,7 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 				//System.out.println("#### Source : "+sourcePageLink+ "-->"+sourcePageID);
 
 				String targetPageLink = null;
-				int outgoingLinks = 0;
+//				int outgoingLinks = 0;
 
 				while((targetPageLink = extractor.getNextInCorpusLinkTarget())!=null){
 
@@ -103,41 +106,55 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 						continue;
 					}
 
+//					List<Integer> links;
+//					if((links = incomingLinks.get(targetLinkID)) == null){
+//						links = new ArrayList<Integer>();
+//						incomingLinks.put(targetLinkID, links);
+//					}
+//					links.add(sourcePageID);
+					
 					List<Integer> links;
-					if((links = incomingLinks.get(targetLinkID)) == null){
+					if((links = outgoingLinks.get(sourcePageID)) == null){
 						links = new ArrayList<Integer>();
-						incomingLinks.put(targetLinkID, links);
+						outgoingLinks.put(sourcePageID, links);
 					}
-
-					links.add(sourcePageID);
-					outgoingLinks++;
+					links.add(targetLinkID);
+					
+//					outgoingLinks++;
 				}
 
 				blockSize--;
 				//write the temp link list to file
 				if(blockSize == 0){
-					Util.writeTempGraphToFile(incomingLinks, tempFolder+"graph/graph"+blockNumber);
-					incomingLinks.clear();
+//					Util.writeTempGraphToFile(incomingLinks, tempFolder+"graph/graph"+blockNumber);
+//					incomingLinks.clear();
+					Util.writeTempGraphToFile(outgoingLinks, tempFolder+"graph/graph"+blockNumber);
+					outgoingLinks.clear();
 					blockNumber++;
 					blockSize = linksBlockSize;
 				}
 
-				bufferWriter.write(sourcePageID+" "+outgoingLinks+"\n");
+//				bufferWriter.write(sourcePageID+" "+outgoingLinks+"\n");
 				//outgoingLinksTotal.put(sourcePageID, outgoingLinks);
 			}
 
 			//write remaining links
-			Util.writeTempGraphToFile(incomingLinks, tempFolder+"graph/graph"+blockNumber);
-			incomingLinks.clear();
+//			Util.writeTempGraphToFile(incomingLinks, tempFolder+"graph/graph"+blockNumber);
+//			incomingLinks.clear();
+			Util.writeTempGraphToFile(outgoingLinks, tempFolder+"graph/graph"+blockNumber);
+			outgoingLinks.clear();
+			outgoingLinks = null;
 			blockNumber++;
 			blockSize = linksBlockSize;
 
 			//Merge all the temp files
-			Util.mergeGraphFiles(tempFolder+"graph/", tempOutgoingLinkCountFile);
+//			Util.mergeGraphFiles(tempFolder+"graph/", tempOutgoingLinkCountFile, 
+//					graphFile, pageCount);
+			Util.mergeGraphFiles(tempFolder+"graph/", graphFile, pageCount);
 
 		}finally{
-			bufferWriter.close();
-			fileWriter.close();
+//			bufferWriter.close();
+//			fileWriter.close();
 		}
 
 		return;
@@ -159,6 +176,75 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 	@Override
 	public void compute() throws IOException {
 		System.out.println("Computing using " + this.getClass().getName());
+		
+		FileReader fileReader = new FileReader(graphFile);
+		BufferedReader graphReader = new BufferedReader(fileReader);
+		
+		int numberofIterations = 1;
+		double lambda = 0.1;
+		
+		try{
+			
+			int totalPages = Integer.parseInt(graphReader.readLine());
+			double[] currentPageRank = new double[totalPages];
+			double[] resultingPageRank = new double[totalPages];
+			
+			//start with each page been equally likely
+			double startingPageRank = 1.0/totalPages;
+			for(int i=0; i<currentPageRank.length; i++){
+				currentPageRank[i] = startingPageRank;
+			}
+			
+
+			while(numberofIterations > 0){
+				
+				//each page has lambda/totalpages chance of random selection.
+				for(int i=0; i<resultingPageRank.length; i++){
+					resultingPageRank[i] = lambda/totalPages;
+				}
+				
+				String entry = null;
+				while((entry = graphReader.readLine()) != null){
+					String[] entries = entry.trim().split("\\s+");
+					if(entries.length==0){
+						continue;
+					}
+					
+					int pageID = Integer.parseInt(entries[0]);
+					int qTotal = entries.length-1;
+					
+					if(entries.length > 1){ //page has outgoing links
+						for(int q=1;q<entries.length;q++){
+							int targetPageID = Integer.parseInt(entries[q]);
+							//probability of being at target page 
+							resultingPageRank[targetPageID-1] += (1-lambda) * (currentPageRank[pageID-1] / qTotal);
+						}
+					}else{ //no outgoing links
+						for(int q=0;q<totalPages;q++){
+							//probability is divided evenly among all the pages.
+							resultingPageRank[q] += (1-lambda) * (currentPageRank[pageID-1] / totalPages);
+						}
+					}
+					
+					//update current pageRank estimate
+					for(int i=0; i<totalPages; i++){
+						currentPageRank[i] = resultingPageRank[i];
+					}
+				}
+				
+				--numberofIterations;
+			}
+			
+			//write all pageranks to file
+			Util.writePageRanks(resultingPageRank, pageRanksFile);
+			
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			graphReader.close();
+			fileReader.close();
+		}
+		
 		return;
 	}
 

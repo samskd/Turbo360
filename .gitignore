@@ -24,3 +24,7 @@ WebSearchEngineHW3/data/wikitest/C
 WebSearchEngineHW3/conf/engine.conf
 
 WebSearchEngineHW3/conf/engine.conf
+
+WebSearchEngineHW3/data/pageranks
+
+*.conf

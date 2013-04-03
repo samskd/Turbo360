@@ -48,12 +48,12 @@ public class Util {
 	}
 
 
-	public static void mergeGraphFiles(String folderName, 
-			String outGoingLinksCountFiles) throws IOException {
+	public static void mergeGraphFiles(String folderName, String outputFile, 
+			int totalPages) throws IOException {
 
 		BufferedReader[] readers = null;
 
-		File file = new File("data/corpus.graph");
+		File file = new File(outputFile);
 		// if file doesnt exists, then create it
 		if (!file.exists()) {
 			file.createNewFile();
@@ -62,8 +62,11 @@ public class Util {
 		FileWriter fileWriter = new FileWriter(file);
 		BufferedWriter bufferWriter = new BufferedWriter(fileWriter);
 
-		FileReader fileReader = new FileReader(outGoingLinksCountFiles);
-		BufferedReader outGoingLinksCountReader = new BufferedReader(fileReader);
+		//writes the total pages on the first line
+		bufferWriter.write(totalPages+"\n");
+		
+//		FileReader fileReader = new FileReader(outGoingLinksCountFiles);
+//		BufferedReader outGoingLinksCountReader = new BufferedReader(fileReader);
 
 		try{
 
@@ -92,10 +95,11 @@ public class Util {
 			StringBuilder incomingLinksList = new StringBuilder();
 
 			do{
-				String start;
-				if((start = outGoingLinksCountReader.readLine()) == null){
-					break;
-				}
+				String start = Integer.toString(currentPageID);
+//				if((start = outGoingLinksCountReader.readLine()) == null){
+//					break;
+//				}
+				
 				incomingLinksList.append(start.trim());
 
 				for(int i = 0; i < tempFiles.length; i++){
@@ -133,18 +137,35 @@ public class Util {
 		}catch(Exception e){
 			e.printStackTrace();
 		}finally{
-			if(bufferWriter != null)
-				bufferWriter.close();
-			if(fileWriter != null)
-				fileWriter.close();
+			bufferWriter.close();
+			fileWriter.close();
+//			outGoingLinksCountReader.close();
 			if(readers != null){
 				for(BufferedReader reader : readers){
 					if(reader != null)
 						reader.close();
 				}
 			}
+			
 		}
 
+	}
+	
+	
+	public static void writePageRanks(double[] pageRanks, String outputFile) throws IOException{
+		
+		FileWriter fileWriter = new FileWriter(outputFile);
+		BufferedWriter bufferWriter = new BufferedWriter(fileWriter);
+		try{
+			for(int i=0; i<pageRanks.length; i++){
+				bufferWriter.write((i+1) + " " + pageRanks[i] + "\n");
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			bufferWriter.close();
+			fileWriter.close();
+		}
 	}
 
 }
