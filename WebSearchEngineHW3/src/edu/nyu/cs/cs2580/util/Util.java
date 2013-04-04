@@ -74,7 +74,7 @@ public class Util {
 				tempFiles = directory.listFiles();
 			}
 
-			int currentPageID = 1;
+			int currentPageID = 0;
 
 			//combine all the files into one. Temp files doesn't have correlated data, 
 			//so just copy and add into new file
@@ -177,6 +177,7 @@ public class Util {
 
 		FileWriter fileWriter = new FileWriter(outputFile);
 		BufferedWriter bufferWriter = new BufferedWriter(fileWriter);
+		bufferWriter.write(pageRanks.length + "\n");
 		try{
 			for(int i=0; i<pageRanks.length; i++){
 				bufferWriter.write((i+1) + " " + pageRanks[i] + "\n");

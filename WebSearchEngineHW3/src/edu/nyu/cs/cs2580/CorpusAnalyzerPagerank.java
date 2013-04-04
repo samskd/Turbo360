@@ -20,10 +20,10 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 		super(options);
 	}
 
-	int linksBlockSize = 2000;
-	String tempFolder = "data/temp/";
-	String graphFile = "data/corpus.graph";
-	String pageRanksFile = "data/pageranks";
+	final int linksBlockSize = 2000;
+	final String tempFolder = "data/temp/";
+	final String graphFile = "data/corpus.graph";
+	final String pageRanksFile = "data/pageranks";
 
 	/**
 	 * This function processes the corpus as specified inside {@link _options}
@@ -69,7 +69,7 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 
 			//Maps page link to ID
 			Map<String, Integer> pages = new HashMap<String, Integer>();
-			int pageCount = 0;
+			int pageCount = -1;
 			for(File page : corpusDirectory.listFiles()){
 				pages.put(page.getName(), ++pageCount);
 			}
@@ -103,7 +103,7 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 						outgoingLinks.put(sourcePageID, links);
 					}
 					links.add(targetLinkID);
-					
+
 				}
 
 				blockSize--;
@@ -150,43 +150,43 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 	@Override
 	public void compute() throws IOException {
 		System.out.println("Computing using " + this.getClass().getName());
-		
+
 		FileReader fileReader = new FileReader(graphFile);
 		BufferedReader graphReader = new BufferedReader(fileReader);
-		
+
 		int numberofIterations = 1;
 		double lambda = 0.1;
-		
+
 		try{
-			
+
 			int totalPages = Integer.parseInt(graphReader.readLine());
 			double[] currentPageRank = new double[totalPages];
 			double[] resultingPageRank = new double[totalPages];
-			
+
 			//start with each page been equally likely
 			double startingPageRank = 1.0/totalPages;
 			for(int i=0; i<currentPageRank.length; i++){
 				currentPageRank[i] = startingPageRank;
 			}
-			
+
 
 			while(numberofIterations > 0){
-				
+
 				//each page has lambda/totalpages chance of random selection.
 				for(int i=0; i<resultingPageRank.length; i++){
 					resultingPageRank[i] = lambda/totalPages;
 				}
-				
+
 				String entry = null;
 				while((entry = graphReader.readLine()) != null){
 					String[] entries = entry.trim().split("\\s+");
 					if(entries.length==0){
 						continue;
 					}
-					
+
 					int pageID = Integer.parseInt(entries[0]);
 					int qTotal = entries.length-1;
-					
+
 					if(entries.length > 1){ //page has outgoing links
 						for(int q=1;q<entries.length;q++){
 							int targetPageID = Integer.parseInt(entries[q]);
@@ -199,26 +199,26 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 							resultingPageRank[q] += (1-lambda) * (currentPageRank[pageID-1] / totalPages);
 						}
 					}
-					
+
 					//update current pageRank estimate
 					for(int i=0; i<totalPages; i++){
 						currentPageRank[i] = resultingPageRank[i];
 					}
 				}
-				
+
 				--numberofIterations;
 			}
-			
+
 			//write all pageranks to file
 			Util.writePageRanks(resultingPageRank, pageRanksFile);
-			
+
 		}catch(Exception e){
 			e.printStackTrace();
 		}finally{
 			graphReader.close();
 			fileReader.close();
 		}
-		
+
 		return;
 	}
 
@@ -231,6 +231,31 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 	@Override
 	public Object load() throws IOException {
 		System.out.println("Loading using " + this.getClass().getName());
-		return null;
+		Double[] pageRanks = null;
+
+		FileReader fileReader = new FileReader(pageRanksFile);
+		BufferedReader bufferedReader = new BufferedReader(fileReader);
+
+		try{
+
+			int totalPages = Integer.parseInt(bufferedReader.readLine());
+			pageRanks = new Double[totalPages];
+
+			String line = null;
+			while((line = bufferedReader.readLine()) != null){
+				String[] entry = line.trim().split("//s+");
+				if(entry.length < 2) continue;
+				int pageID = Integer.parseInt(entry[0]);
+				double pageRank = Double.parseDouble(entry[1]);
+				pageRanks[pageID] = pageRank;
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			bufferedReader.close();
+			fileReader.close();
+		}
+
+		return pageRanks;
 	}
 }
