@@ -51,7 +51,7 @@ public class Util {
 	public static void mergeGraphFiles(String folderName, String outputFile, 
 			int totalPages) throws IOException {
 
-		BufferedReader[] readers = null;
+		//		BufferedReader[] readers = null;
 
 		File file = new File(outputFile);
 		// if file doesnt exists, then create it
@@ -64,9 +64,6 @@ public class Util {
 
 		//writes the total pages on the first line
 		bufferWriter.write(totalPages+"\n");
-		
-//		FileReader fileReader = new FileReader(outGoingLinksCountFiles);
-//		BufferedReader outGoingLinksCountReader = new BufferedReader(fileReader);
 
 		try{
 
@@ -77,55 +74,80 @@ public class Util {
 				tempFiles = directory.listFiles();
 			}
 
-			readers = new BufferedReader[tempFiles.length];
-			String[] currentLines = new String[tempFiles.length];
+			int currentPageID = 1;
 
-			for(int i = 0; i<tempFiles.length; i++){
-				readers[i] = new BufferedReader(new FileReader(tempFiles[i]));
-				String temp = readers[i].readLine();
-				if(temp == null){
-					currentLines[i] = null;
-				}else{
-					currentLines[i] = temp.trim();
+			//combine all the files into one. Temp files doesn't have correlated data, 
+			//so just copy and add into new file
+			for(File tFile : tempFiles){
+				BufferedReader reader = new BufferedReader(new FileReader(tFile));
+				try{
+					String line = reader.readLine(); 
+					while(line != null){
+						line = line.trim();
+
+						if(!line.isEmpty() && line.startsWith(Integer.toString(currentPageID))){
+							bufferWriter.write(line + "\n");
+							line = reader.readLine();
+						}else{
+							bufferWriter.write(currentPageID + "\n");
+						}
+						++currentPageID;
+					}
+					reader.close();
+					reader = null;
+				}catch(Exception e){
+					e.printStackTrace();
+				}finally{
+					if(reader != null) reader.close();
 				}
+
 			}
 
-			int endOfFiles = 0;
-			int currentPageID = 1;
-			StringBuilder incomingLinksList = new StringBuilder();
-
-			do{
-				String start = Integer.toString(currentPageID);
-//				if((start = outGoingLinksCountReader.readLine()) == null){
-//					break;
-//				}
-				
-				incomingLinksList.append(start.trim());
-
-				for(int i = 0; i < tempFiles.length; i++){
-
-					if(currentLines[i] != null && !currentLines[i].isEmpty() &&
-							currentLines[i].startsWith(Integer.toString(currentPageID))){
-
-						incomingLinksList.append(" "+currentLines[i].substring(
-								currentLines[i].indexOf(" ")+1, currentLines[i].length()));
-
-						String temp = readers[i].readLine();
-						if(temp == null){
-							currentLines[i] = null;
-							endOfFiles++;
-							readers[i].close();
-						}else{
-							currentLines[i] = temp.trim();
-						}
-					}
-				}
-
-				bufferWriter.write(incomingLinksList + "\n");
-				incomingLinksList.delete(0, incomingLinksList.length());
-				currentPageID++;
-
-			}while(endOfFiles < tempFiles.length);
+			//			readers = new BufferedReader[tempFiles.length];
+			//			String[] currentLines = new String[tempFiles.length];
+			//
+			//			for(int i = 0; i<tempFiles.length; i++){
+			//				readers[i] = new BufferedReader(new FileReader(tempFiles[i]));
+			//				String temp = readers[i].readLine();
+			//				if(temp == null){
+			//					currentLines[i] = null;
+			//				}else{
+			//					currentLines[i] = temp.trim();
+			//				}
+			//			}
+			//
+			//			int endOfFiles = 0;
+			//			int currentPageID = 1;
+			//			StringBuilder incomingLinksList = new StringBuilder();
+			//
+			//			do{
+			//				String start = Integer.toString(currentPageID);
+			//				incomingLinksList.append(start.trim());
+			//
+			//				for(int i = 0; i < tempFiles.length; i++){
+			//
+			//					if(currentLines[i] != null && !currentLines[i].isEmpty() &&
+			//							currentLines[i].startsWith(Integer.toString(currentPageID))){
+			//
+			//						incomingLinksList.append(" "+currentLines[i].substring(
+			//								currentLines[i].indexOf(" ")+1, currentLines[i].length()));
+			//
+			//						String temp = readers[i].readLine();
+			//						if(temp == null){
+			//							currentLines[i] = null;
+			//							endOfFiles++;
+			//							readers[i].close();
+			//						}else{
+			//							currentLines[i] = temp.trim();
+			//						}
+			//					}
+			//				}
+			//
+			//				bufferWriter.write(incomingLinksList + "\n");
+			//				incomingLinksList.delete(0, incomingLinksList.length());
+			//				currentPageID++;
+			//
+			//			}while(endOfFiles < tempFiles.length);
 
 			bufferWriter.close();
 
@@ -139,21 +161,20 @@ public class Util {
 		}finally{
 			bufferWriter.close();
 			fileWriter.close();
-//			outGoingLinksCountReader.close();
-			if(readers != null){
-				for(BufferedReader reader : readers){
-					if(reader != null)
-						reader.close();
-				}
-			}
-			
+			//			if(readers != null){
+			//				for(BufferedReader reader : readers){
+			//					if(reader != null)
+			//						reader.close();
+			//				}
+			//			}
+
 		}
 
 	}
-	
-	
+
+
 	public static void writePageRanks(double[] pageRanks, String outputFile) throws IOException{
-		
+
 		FileWriter fileWriter = new FileWriter(outputFile);
 		BufferedWriter bufferWriter = new BufferedWriter(fileWriter);
 		try{
