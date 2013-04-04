@@ -55,11 +55,6 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 		directory = new File(tempFolder+"graph");
 		if(!directory.exists()){ directory.mkdirs(); }
 
-
-//		String tempOutgoingLinkCountFile = tempFolder+"outgoingLinksCount";
-//		FileWriter fileWriter = new FileWriter(tempOutgoingLinkCountFile);
-//		BufferedWriter bufferWriter = new BufferedWriter(fileWriter);
-
 		int blockSize = linksBlockSize;
 		int blockNumber = 0;
 
@@ -79,8 +74,7 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 				pages.put(page.getName(), ++pageCount);
 			}
 
-			//Maps Link ID to set of incoming links
-//			Map<Integer, List<Integer>> incomingLinks = new HashMap<Integer, List<Integer>>();
+			//Maps Link ID to set of outcoming links
 			Map<Integer, List<Integer>> outgoingLinks = new HashMap<Integer, List<Integer>>();
 
 			for(File page : corpusDirectory.listFiles()){
@@ -94,10 +88,7 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 					continue;
 				}
 
-				//System.out.println("#### Source : "+sourcePageLink+ "-->"+sourcePageID);
-
 				String targetPageLink = null;
-//				int outgoingLinks = 0;
 
 				while((targetPageLink = extractor.getNextInCorpusLinkTarget())!=null){
 
@@ -106,13 +97,6 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 						continue;
 					}
 
-//					List<Integer> links;
-//					if((links = incomingLinks.get(targetLinkID)) == null){
-//						links = new ArrayList<Integer>();
-//						incomingLinks.put(targetLinkID, links);
-//					}
-//					links.add(sourcePageID);
-					
 					List<Integer> links;
 					if((links = outgoingLinks.get(sourcePageID)) == null){
 						links = new ArrayList<Integer>();
@@ -120,27 +104,20 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 					}
 					links.add(targetLinkID);
 					
-//					outgoingLinks++;
 				}
 
 				blockSize--;
 				//write the temp link list to file
 				if(blockSize == 0){
-//					Util.writeTempGraphToFile(incomingLinks, tempFolder+"graph/graph"+blockNumber);
-//					incomingLinks.clear();
 					Util.writeTempGraphToFile(outgoingLinks, tempFolder+"graph/graph"+blockNumber);
 					outgoingLinks.clear();
 					blockNumber++;
 					blockSize = linksBlockSize;
 				}
 
-//				bufferWriter.write(sourcePageID+" "+outgoingLinks+"\n");
-				//outgoingLinksTotal.put(sourcePageID, outgoingLinks);
 			}
 
 			//write remaining links
-//			Util.writeTempGraphToFile(incomingLinks, tempFolder+"graph/graph"+blockNumber);
-//			incomingLinks.clear();
 			Util.writeTempGraphToFile(outgoingLinks, tempFolder+"graph/graph"+blockNumber);
 			outgoingLinks.clear();
 			outgoingLinks = null;
@@ -148,13 +125,10 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 			blockSize = linksBlockSize;
 
 			//Merge all the temp files
-//			Util.mergeGraphFiles(tempFolder+"graph/", tempOutgoingLinkCountFile, 
-//					graphFile, pageCount);
 			Util.mergeGraphFiles(tempFolder+"graph/", graphFile, pageCount);
 
-		}finally{
-//			bufferWriter.close();
-//			fileWriter.close();
+		}catch(Exception e){
+			e.printStackTrace();
 		}
 
 		return;
