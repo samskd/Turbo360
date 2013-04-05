@@ -82,9 +82,9 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 				HeuristicLinkExtractor extractor = new HeuristicLinkExtractor(page);
 				String sourcePageLink = extractor.getLinkSource();
 				Integer sourcePageID;
-
+				
+				//continue if the page is not present in the corpurs.
 				if((sourcePageID = pages.get(sourcePageLink)) == null){
-					System.out.println(page.getName());
 					continue;
 				}
 
@@ -125,7 +125,7 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 			blockSize = linksBlockSize;
 
 			//Merge all the temp files
-			Util.mergeGraphFiles(tempFolder+"graph/", graphFile, pageCount);
+			Util.mergeGraphFiles(tempFolder+"graph/", graphFile, pageCount+1);
 
 		}catch(Exception e){
 			e.printStackTrace();
@@ -191,12 +191,12 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 						for(int q=1;q<entries.length;q++){
 							int targetPageID = Integer.parseInt(entries[q]);
 							//probability of being at target page 
-							resultingPageRank[targetPageID-1] += (1-lambda) * (currentPageRank[pageID-1] / qTotal);
+							resultingPageRank[targetPageID] += (1-lambda) * (currentPageRank[pageID] / qTotal);
 						}
 					}else{ //no outgoing links
 						for(int q=0;q<totalPages;q++){
 							//probability is divided evenly among all the pages.
-							resultingPageRank[q] += (1-lambda) * (currentPageRank[pageID-1] / totalPages);
+							resultingPageRank[q] += (1-lambda) * (currentPageRank[pageID] / totalPages);
 						}
 					}
 
@@ -243,7 +243,7 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 
 			String line = null;
 			while((line = bufferedReader.readLine()) != null){
-				String[] entry = line.trim().split("//s+");
+				String[] entry = line.trim().split("\\s+");
 				if(entry.length < 2) continue;
 				int pageID = Integer.parseInt(entry[0]);
 				double pageRank = Double.parseDouble(entry[1]);
