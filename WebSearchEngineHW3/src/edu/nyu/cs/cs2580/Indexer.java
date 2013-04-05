@@ -149,4 +149,9 @@ public abstract class Indexer {
       return null;
     }
   }
+
+public int nextPhrase(Query query, int docid, int position) {
+	// TODO Auto-generated method stub
+	return 0;
+}
 }
