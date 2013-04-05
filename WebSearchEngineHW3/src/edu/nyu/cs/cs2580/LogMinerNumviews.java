@@ -30,6 +30,13 @@ public class LogMinerNumviews extends LogMiner {
   final String logFile = "data/log/20130301-160000.log";
   final String outputFile = "data/temp1/numViews";
   
+  //Maps page link to ID
+  Map<String, Integer> pages = new HashMap<String, Integer>();
+  //Maps ID to page link
+  Map<Integer, String> IDPages = new HashMap<Integer, String>();
+  // Maps page ID to numviews
+  Map<Integer, Integer> numViews = new HashMap<Integer, Integer>();
+  
   /**
    * This function processes the logs within the log directory as specified by
    * the {@link _options}. The logs are obtained from Wikipedia dumps and have
@@ -55,11 +62,7 @@ public class LogMinerNumviews extends LogMiner {
 			return;
 		}
 
-		//Maps page link to ID
-		Map<String, Integer> pages = new HashMap<String, Integer>();
-		Map<Integer, String> IDPages = new HashMap<Integer, String>();
-		// Maps page ID to numviews
-		Map<Integer, Integer> numViews = new HashMap<Integer, Integer>();
+		
 		
 		int pageCount = -1;
 		int numViewsCount = -1;
@@ -129,6 +132,33 @@ public class LogMinerNumviews extends LogMiner {
   @Override
   public Object load() throws IOException {
     System.out.println("Loading using " + this.getClass().getName());
-    return null;
+    
+    try{
+
+		File corpusDirectory = new File(_options._corpusPrefix);
+
+		//returns if the corpus prefix is not a directory
+		if(!corpusDirectory.isDirectory()){
+			return null;
+		}
+    	
+  		int pageCount = -1;
+  		for(File page : corpusDirectory.listFiles()){
+  			pages.put(page.getName(), ++pageCount);
+  		}
+    
+    BufferedReader br = new BufferedReader(new FileReader(outputFile));
+	String line;
+	while ((line = br.readLine()) != null) {
+	   String[] lineSplit = line.split("\\s+");
+	   if(lineSplit.length == 2){
+		   numViews.put(pages.get(lineSplit[0]), Integer.parseInt(lineSplit[1]));
+	   }
+	}
+	br.close();
+    }catch(Exception e){
+		e.printStackTrace();
+	}
+    return numViews;
   }
 }
