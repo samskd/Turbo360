@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -80,7 +81,8 @@ public class LogMinerNumviews extends LogMiner {
 		while ((line = br.readLine()) != null) {
 		   String[] lineSplit = line.split("\\s+");
 		   if(lineSplit.length == 3){
-			   id = pages.get(filter(lineSplit[1]));
+			   //id = pages.get(filter(lineSplit[1]));
+			   id = pages.get(URLDecoder.decode(lineSplit[1], "UTF-8"));
 			   //Modify lineSplit[1] to remove special characters
 			   numViews.put(id, Integer.parseInt(lineSplit[2]));
 		   }
@@ -94,7 +96,8 @@ public class LogMinerNumviews extends LogMiner {
 		Iterator<Entry<Integer, Integer>> i = numViewsSet.iterator();
 		while(i.hasNext()){
 			Entry<Integer,Integer> entry = (Map.Entry<Integer, Integer>)i.next();
-			bufferWriter.write(IDPages.get(entry.getKey()) + " " + entry.getValue() + "\n");
+			//Wrote ID -> numViews
+			bufferWriter.write(entry.getKey() + " " + entry.getValue() + "\n");
 		}
 		bufferWriter.close();
 		fileWriter.close();
@@ -152,7 +155,7 @@ public class LogMinerNumviews extends LogMiner {
 	while ((line = br.readLine()) != null) {
 	   String[] lineSplit = line.split("\\s+");
 	   if(lineSplit.length == 2){
-		   numViews.put(pages.get(lineSplit[0]), Integer.parseInt(lineSplit[1]));
+		   numViews.put(Integer.parseInt(lineSplit[0]), Integer.parseInt(lineSplit[1]));
 	   }
 	}
 	br.close();
