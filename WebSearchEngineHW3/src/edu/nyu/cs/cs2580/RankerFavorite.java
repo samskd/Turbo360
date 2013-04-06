@@ -52,7 +52,6 @@ public class RankerFavorite extends Ranker {
 
 	private Double getScore(Query query, DocumentIndexed d) {
 
-		query.processQuery();
 		Vector<String> qv = query._tokens;
 
 		Vector <Integer> dv = d.getDocumentTokens();
