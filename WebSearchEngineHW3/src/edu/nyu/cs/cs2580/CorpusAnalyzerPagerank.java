@@ -4,10 +4,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import edu.nyu.cs.cs2580.SearchEngine.Options;
 import edu.nyu.cs.cs2580.util.Util;
@@ -75,7 +75,7 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 			}
 
 			//Maps Link ID to set of outcoming links
-			Map<Integer, List<Integer>> outgoingLinks = new HashMap<Integer, List<Integer>>();
+			Map<Integer, Set<Integer>> outgoingLinks = new HashMap<Integer, Set<Integer>>();
 
 			for(File page : corpusDirectory.listFiles()){
 
@@ -97,9 +97,9 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 						continue;
 					}
 
-					List<Integer> links;
+					Set<Integer> links;
 					if((links = outgoingLinks.get(sourcePageID)) == null){
-						links = new ArrayList<Integer>();
+						links = new HashSet<Integer>();
 						outgoingLinks.put(sourcePageID, links);
 					}
 					links.add(targetLinkID);

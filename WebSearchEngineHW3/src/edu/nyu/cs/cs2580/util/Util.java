@@ -10,12 +10,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 
 public class Util {
 
 	public static void writeTempGraphToFile(
-			Map<Integer, List<Integer>> incomingLinks, String tempFile) 
+			Map<Integer, Set<Integer>> incomingLinks, String tempFile) 
 					throws IOException{
 
 		FileWriter fileWriter = new FileWriter(tempFile);
@@ -30,7 +31,7 @@ public class Util {
 
 			for(int pageID : pageIDs){
 				temp.append(pageID+" ");
-				List<Integer> links = incomingLinks.get(pageID);
+				Set<Integer> links = incomingLinks.get(pageID);
 				for(int link : links){
 					temp.append(link+" "); 
 				}
