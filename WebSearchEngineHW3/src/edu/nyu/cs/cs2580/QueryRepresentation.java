@@ -20,17 +20,29 @@ import edu.nyu.cs.cs2580.util.Util;
 public class QueryRepresentation {
 	
 	private Ranker _ranker;
+	private Indexer _indexer;
 	
-	public QueryRepresentation(Ranker ranker){
+	public QueryRepresentation(Ranker ranker, Indexer indexer){
 		this._ranker = ranker;
+		this._indexer = indexer;
 	}
 
-	public void represent(Query query, int numberOfDocumentsToBeConsidered, int numberOfTerms) throws IOException{
+	public String represent(Query query, int numberOfDocumentsToBeConsidered, int numberOfTerms) throws IOException{
 
+		FileWriter fileWrite = null;
+		BufferedWriter bufferedWriter = null;
+		
+		FileReader fileReader = null;
+		BufferedReader bufferedReader = null;
+		
+		StringBuilder output = new StringBuilder();
+		
 		try{
-
+			
 			String inputFile = "tempProbabilities";
 			String outputFile = "probabilities";
+			String resultFile = "data/prf/qr_"+query._query+"_" +
+					numberOfDocumentsToBeConsidered+"_"+numberOfTerms;
 
 			Vector<ScoredDocument> documents = _ranker.runQuery(query, numberOfDocumentsToBeConsidered);
 			long totalWords = 0;
@@ -49,10 +61,11 @@ public class QueryRepresentation {
 				totalWords += documentVector.size();
 			}
 
-			FileWriter fileWrite = new FileWriter(inputFile);
-			BufferedWriter bufferedWriter = new BufferedWriter(fileWrite);
+			fileWrite = new FileWriter(inputFile);
+			bufferedWriter = new BufferedWriter(fileWrite);
 
-			System.out.println(totalWords);
+			double probabilitySum = 0;
+			
 			Iterator<Integer> terms = allTerms.iterator();
 			while(terms.hasNext()){
 				int term = terms.next();
@@ -62,13 +75,13 @@ public class QueryRepresentation {
 					DocumentIndexed d = (DocumentIndexed)doc.getDocument();
 					termTotal += Util.getTermCount(d.getDocumentTokens(), term);
 				}
-
-				bufferedWriter.write(term +"\t"+ (double)termTotal/totalWords + "\n");
+				double prob = (double)termTotal/totalWords;
+				probabilitySum += prob;
+				bufferedWriter.write(term +"\t"+ prob + "\n");
 			}
 
-			bufferedWriter.close();
-			fileWrite.close();
-
+			
+			//External sort the probability file
 			Comparator<String> comparator = new Comparator<String>() {
 
 				public int compare(String r1, String r2){
@@ -85,29 +98,37 @@ public class QueryRepresentation {
 			List<File> l = ExternalSort.sortInBatch(input, comparator) ;
 			ExternalSort.mergeSortedFiles(l, new File(outputFile), comparator);
 
-			FileReader fileReader = new FileReader(outputFile);
-			BufferedReader bufferedReader = new BufferedReader(fileReader);
+			fileReader = new FileReader(outputFile);
+			bufferedReader = new BufferedReader(fileReader);
 
 			temp = numberOfTerms;
-			StringBuilder str = new StringBuilder();
+			
 			String line = null;
 			while((line = bufferedReader.readLine()) != null){
-				str.append(line+"\n");
+				String[] entry = line.split("\\s+");
+				//normalized value
+				double prob = Double.parseDouble(entry[1])/probabilitySum;
+				output.append(entry[0]+"\t"+prob+"\n");
 				if(temp==0) break;
 				else --temp;
 			}
-
-			bufferedReader.close();
-			fileReader.close();
 			
 			input.delete();
-
-			System.out.println(str.toString());
+			
+			fileWrite = new FileWriter(resultFile);
+			bufferedWriter = new BufferedWriter(fileWrite);
+			bufferedWriter.write(output.toString());
 
 		}catch(Exception e){
 			e.printStackTrace();
+		}finally{
+			if(fileWrite != null) fileWrite.close();
+			if(fileReader != null) fileReader.close();
+			if(bufferedReader != null) bufferedReader.close();
+			if(bufferedWriter != null) bufferedWriter.close();
 		}
 
+		return output.toString();
 	}
 	
 }

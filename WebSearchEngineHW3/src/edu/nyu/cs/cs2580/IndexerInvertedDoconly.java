@@ -339,4 +339,9 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 		// TODO Auto-generated method stub
 		return 0;
 	}
+	
+	
+	public String getTerm(int termId){
+		return _terms.get(termId);
+	}
 }
