@@ -29,7 +29,7 @@ public class LogMinerNumviews extends LogMiner {
   final String tempFolder = "data/temp1/";
   final String pageRanksFile = "data/numviews";
   final String logFile = "data/log/20130301-160000.log";
-  final String outputFile = "data/temp1/numViews";
+  final String outputFile = "numViews";
   
   //Maps page link to ID
   Map<String, Integer> pages = new HashMap<String, Integer>();
@@ -81,10 +81,16 @@ public class LogMinerNumviews extends LogMiner {
 		while ((line = br.readLine()) != null) {
 		   String[] lineSplit = line.split("\\s+");
 		   if(lineSplit.length == 3){
-			   //id = pages.get(filter(lineSplit[1]));
-			   id = pages.get(URLDecoder.decode(lineSplit[1], "UTF-8"));
+			 //  id = pages.get(filter(lineSplit[1]));
+			   try{
+			   String in = URLDecoder.decode(lineSplit[1], "UTF-8");
+			   if(pages.containsKey(in))
+				   id = pages.get(in);
 			   //Modify lineSplit[1] to remove special characters
-			   numViews.put(id, Integer.parseInt(lineSplit[2]));
+			   numViews.put(id, numViews.get(id)+Integer.parseInt(lineSplit[2]));
+			   } catch(IllegalArgumentException e){
+				   
+			   }
 		   }
 		}
 		br.close();
