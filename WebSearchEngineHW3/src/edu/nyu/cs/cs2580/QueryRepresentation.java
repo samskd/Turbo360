@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.PriorityQueue;
@@ -64,16 +63,16 @@ public class QueryRepresentation {
 			}
 
 
-			class QueryProb implements Comparable<QueryProb>{
+			class TermProb implements Comparable<TermProb>{
 
 				public String _term;
 				public double _prob;
-				public QueryProb(String term, double prob) {
+				public TermProb(String term, double prob) {
 					this._term = term;
 					this._prob = prob;
 				}
 				@Override
-				public int compareTo(QueryProb o) {
+				public int compareTo(TermProb o) {
 					if (this._prob == o._prob) {
 						return 0;
 					}
@@ -82,7 +81,7 @@ public class QueryRepresentation {
 
 			}
 			
-			Queue<QueryProb> topMProb = new PriorityQueue<QueryProb>();
+			Queue<TermProb> topMProb = new PriorityQueue<TermProb>();
 			
 			Iterator<Integer> terms = allTerms.iterator();
 			while(terms.hasNext()){
@@ -97,7 +96,7 @@ public class QueryRepresentation {
 				double prob = (double)termTotal/totalWords;
 				String termStr = _indexer._terms.get(term);
 				if(!StopWords.isStopWord(termStr)){
-					topMProb.add(new QueryProb(termStr, prob));
+					topMProb.add(new TermProb(termStr, prob));
 					if (topMProb.size() > numberOfTerms) {
 						topMProb.poll();
 					}
@@ -107,19 +106,19 @@ public class QueryRepresentation {
 			
 			//total probability of top M terms
 			double probabilitySum = 0.0;
-			for(QueryProb termP : topMProb){
+			for(TermProb termP : topMProb){
 				probabilitySum += termP._prob;
 			}
-			
+			System.out.println(probabilitySum);
 			fileWrite = new FileWriter(resultFile);
 			bufferedWriter = new BufferedWriter(fileWrite);
-
-			StringBuilder str = new StringBuilder();
-			for(QueryProb termP : topMProb){
-				str.insert(0, termP._term +"\t"+ (termP._prob/probabilitySum) + "\n");
+			
+			TermProb termP = null;
+			while ((termP = topMProb.poll()) != null) {
+				output.insert(0, termP._term +"\t"+ (termP._prob/probabilitySum) + "\n");
 			}
 			
-			bufferedWriter.write(str.toString());
+			bufferedWriter.write(output.toString());
 			bufferedWriter.close();
 			fileWrite.close();
 
