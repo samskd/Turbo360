@@ -109,7 +109,7 @@ public class QueryRepresentation {
 			for(TermProb termP : topMProb){
 				probabilitySum += termP._prob;
 			}
-			System.out.println(probabilitySum);
+
 			fileWrite = new FileWriter(resultFile);
 			bufferedWriter = new BufferedWriter(fileWrite);
 			
