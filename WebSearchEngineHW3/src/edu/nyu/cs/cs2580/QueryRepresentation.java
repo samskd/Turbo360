@@ -20,11 +20,9 @@ import edu.nyu.cs.cs2580.util.Util;
 public class QueryRepresentation {
 	
 	private Ranker _ranker;
-	private Indexer _indexer;
 	
-	public QueryRepresentation(Ranker ranker, Indexer indexer){
+	public QueryRepresentation(Ranker ranker){
 		this._ranker = ranker;
-		this._indexer = indexer;
 	}
 
 	public void represent(Query query, int numberOfDocumentsToBeConsidered, int numberOfTerms) throws IOException{
