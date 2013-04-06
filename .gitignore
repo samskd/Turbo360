@@ -28,3 +28,7 @@ WebSearchEngineHW3/conf/engine.conf
 WebSearchEngineHW3/data/pageranks
 
 *.conf
+
+WebSearchEngineHW3/data/index/corpus.idx
+
+WebSearchEngineHW3/data/prf/qr_bing_10_10
