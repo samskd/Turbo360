@@ -7,10 +7,6 @@ import java.util.Vector;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-<<<<<<< HEAD
-=======
-
->>>>>>> 4715c2aab5401d7317cf805f05b53196f5ce4c73
 import edu.nyu.cs.cs2580.SearchEngine.Options;
 
 /**
