@@ -134,7 +134,7 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 					if(scanners.get(indexTempFile.getName()) == null){
 						try {
 							Scanner scanner = new Scanner(indexTempFile);
-							scanner.useDelimiter("]");
+							scanner.useDelimiter("],");
 							scanners.put(indexTempFile.getName(),scanner);
 							
 						} catch (FileNotFoundException e) {

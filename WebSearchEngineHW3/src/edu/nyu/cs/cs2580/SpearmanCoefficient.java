@@ -23,6 +23,7 @@ public class SpearmanCoefficient {
 			BufferedReader bufferedReaderPageRank = new BufferedReader(fileReaderPageRank);
 			FileReader fileReaderNumViews = new FileReader(numViews);
 			BufferedReader bufferedReaderNumViews = new BufferedReader(fileReaderNumViews);
+			@SuppressWarnings("unused")
 			int totalPages = Integer.parseInt(bufferedReaderPageRank.readLine());
 			String line = null;
 			while((line = bufferedReaderPageRank.readLine()) != null){
@@ -32,6 +33,7 @@ public class SpearmanCoefficient {
 				}
 			bufferedReaderPageRank.close();
 			fileReaderPageRank.close();
+			totalPages = Integer.parseInt(bufferedReaderNumViews.readLine());
 			line = null;
 			while((line = bufferedReaderNumViews.readLine()) != null){
 				String[] entry = line.trim().split("\\s+");
@@ -86,14 +88,16 @@ public class SpearmanCoefficient {
 		
 	}
 	
-	public double calculateSpearmanCoefficient(File pageRank, File numViews){
+	public double calculateSpearmanCoefficient(String pageRank1, String numViews1){
+		File pageRank = new File(pageRank1);
+		File numViews = new File(numViews1);
 		createSortedMaps(pageRank, numViews);
 		Integer[] numViewsArray = new Integer[sortedNumViewsMap.size()];
 		Integer[] pageRankArray = new Integer[sortedPageRankMap.size()];
 		
 		int pgVar = -1;
 		for(Integer i : sortedPageRankMap.keySet()){
-			pageRankArray[i] = ++pgVar;
+			pageRankArray[i-1] = ++pgVar;
 		}
 		int nmVar = -1;
 		for(Integer i : sortedNumViewsMap.keySet()){

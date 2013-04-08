@@ -204,7 +204,8 @@ public class SearchEngine {
   }
   
   public static void main(String[] args) {
-    try {
+	  
+	  try {
       SearchEngine.parseCommandLine(args);
       switch (SearchEngine.MODE) {
       case MINING:
@@ -219,6 +220,7 @@ public class SearchEngine {
       default:
         Check(false, "Wrong mode for SearchEngine!");
       }
+        
     } catch (Exception e) {
       System.err.println(e.getMessage());
     }
