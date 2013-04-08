@@ -7,6 +7,10 @@ import java.util.Vector;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+<<<<<<< HEAD
+=======
+
+>>>>>>> 4715c2aab5401d7317cf805f05b53196f5ce4c73
 import edu.nyu.cs.cs2580.SearchEngine.Options;
 
 /**
@@ -202,6 +206,9 @@ class QueryHandler implements HttpHandler {
 			String representation = queryRepresentation.represent(processedQuery, 
 					cgiArgs._numDocs, cgiArgs._numTerms);
 			respondWithMsg(exchange, representation.toString());
+			System.out.println("Finished query representation with " + 
+					cgiArgs._numDocs+" documents and "+cgiArgs._numTerms+" terms: " + 
+					cgiArgs._query);
 		}
 		
 	}
