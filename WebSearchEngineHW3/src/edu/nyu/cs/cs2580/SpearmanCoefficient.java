@@ -23,6 +23,7 @@ public class SpearmanCoefficient {
 			BufferedReader bufferedReaderPageRank = new BufferedReader(fileReaderPageRank);
 			FileReader fileReaderNumViews = new FileReader(numViews);
 			BufferedReader bufferedReaderNumViews = new BufferedReader(fileReaderNumViews);
+			@SuppressWarnings("unused")
 			int totalPages = Integer.parseInt(bufferedReaderPageRank.readLine());
 			String line = null;
 			while((line = bufferedReaderPageRank.readLine()) != null){
