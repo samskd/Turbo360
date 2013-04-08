@@ -16,7 +16,10 @@ public class QuerySimilarity {
 	File folder = new File(directoryPath);
 	private File[] files = folder.listFiles();
 	
-	
+	/**
+	 * Create Array of all files with extension .prf
+	 * @return
+	 */
 	private String[] createListOfFiles(){
 		String[] fileNames = new String[files.length];
 		int i=-1;
@@ -27,6 +30,11 @@ public class QuerySimilarity {
 		return fileNames;
 	}
 	
+	/**
+	 * Creates a map from a file where key=term and value=probability
+	 * @param f is file name
+	 * @return the map created
+	 */
 	private Map<String,Double> createMap(String f){
 		File file = new File(f);
 		Map<String,Double> map = new HashMap<String,Double>();
@@ -48,12 +56,21 @@ public class QuerySimilarity {
 		return map;
 	}
 	
+	/**
+	 * Creates Intersection of 2 Maps
+	 * @param m1 - Map 1
+	 * @param m2 - Map 2
+	 * @return - List if common terms
+	 */
 	private List<String> intersection(Map<String,Double> m1, Map<String,Double> m2){
 		Set<String> intersectionSet = new HashSet<String>(m1.keySet());
 		intersectionSet.retainAll(m2.keySet());
 		return new ArrayList<String>(intersectionSet);
 	}
 	
+	/**
+	 * Calculates the Query Similarity
+	 */
 	public void querySimilarity(){
 		String[] files = this.createListOfFiles();
 		Map<String,Double> map1;
