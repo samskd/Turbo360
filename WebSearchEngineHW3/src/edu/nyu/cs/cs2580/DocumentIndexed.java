@@ -25,6 +25,4 @@ public class DocumentIndexed extends Document {
 	public Vector<Integer> getDocumentTokens() {
 		return _documentTokens;
 	}
-
-	
 }

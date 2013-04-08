@@ -8,14 +8,23 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import edu.nyu.cs.cs2580.SearchEngine.Options;
+import edu.nyu.cs.cs2580.FileManager.T3FileWriter;
+import com.google.gson.Gson;
 
 /**
  * @CS2580: Implement this class for HW2.
@@ -25,7 +34,7 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 	private static final long serialVersionUID = 1077111905740085030L;
 
 	// Maps each term to their posting list
-	private Map<Integer, Postings> _invertedIndex = new HashMap<Integer, Postings>();
+	private Map<Integer, Postings> _invertedIndex = new TreeMap<Integer, Postings>();
 
 	//Stores all Document in memory.
 	private Vector<Document> _documents = new Vector<Document>();
@@ -46,6 +55,11 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 	// Term document frequency, key is the integer representation of the term and
 	// value is the number of documents the term appears in.
 	Map<Integer, Integer> _termDocFrequency = new HashMap<Integer, Integer>();
+
+	private static int fileId = 1;
+	private static int docId = 1;
+	private Map<String,Scanner> scanners= new HashMap<String,Scanner>();
+	private Map<String,String> pointerToScanners= new HashMap<String,String>();
 
 	public IndexerInvertedDoconly(Options options) {
 		super(options);
@@ -70,11 +84,18 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 			for(File corpusFile :corpusDirectory.listFiles()){
 				processDocument(corpusFile);	
 				fileCount++;
+
+				if(fileCount % 100 == 0){
+					saveIndexInFile();
+				}
 				System.out.println(fileCount +" out of 10264 Indexing complete");
-				
+
 			}
 			System.out.println(fileCount+ " ->"+ corpusDirectory.listFiles().length);
 		}
+		//save the remaining data
+		saveIndexInFile();
+		mergeFile();
 
 		System.out.println(
 				"Indexed " + Integer.toString(_numDocs) + " docs with " +
@@ -87,6 +108,126 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 			new ObjectOutputStream(new FileOutputStream(indexFile));
 		writer.writeObject(this);
 		writer.close();
+	}
+
+	private void mergeFile()
+	{
+
+		//Final index file
+		T3FileWriter indexWriter = new T3FileWriter(_options._indexPrefix+"/index.idx");
+
+		File indexDirectory = new File(_options._indexPrefix+"/temp");
+		Gson gson = new Gson();
+
+		if(indexDirectory.isDirectory())
+		{
+			indexWriter.write("{");
+			for(int  i = 0 ; i < _dictionary.size();i++){
+				
+				System.out.println("Merging indexes "+i+" out of "+_dictionary.size()+" terms");
+
+				//get posting list of term_id i from all the files and merge them
+				List<Integer> mergedPostingList = new ArrayList<Integer>();
+
+				for(File indexTempFile :indexDirectory.listFiles())
+				{
+					if(scanners.get(indexTempFile.getName()) == null){
+						try {
+							Scanner scanner = new Scanner(indexTempFile);
+							scanner.useDelimiter("]");
+							scanners.put(indexTempFile.getName(),scanner);
+							
+						} catch (FileNotFoundException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+
+					String postingList = getPostingList(indexTempFile , i );
+					//sample posting list = [1,2,3,4,5]
+					if(postingList != null){
+						try{
+							int[] intList = gson.fromJson(postingList, int[].class); 
+							mergedPostingList.addAll(asList(intList));
+						}catch(Exception e){
+							e.printStackTrace();
+						}
+					}
+				}
+
+				//Write the merger list to file i
+				String entry = "\""+i+"\""+":"+gson.toJson(mergedPostingList);
+				indexWriter.write(entry);
+				indexWriter.write(",");
+			}
+			indexWriter.write("}");
+		}
+	}
+
+	public List<Integer> asList(int[] ints)
+	{
+		List<Integer> intList = new ArrayList<Integer>();
+		for (int index = 0; index < ints.length; index++)
+		{
+			intList.add(ints[index]);
+		}
+		return intList;
+	}
+
+	private String getPostingList(File indexTempFile, int term_id)
+	{
+		Scanner scanner = scanners.get(indexTempFile.getName());
+
+		while(scanner.hasNext()){
+			
+			String nextElement ;
+			if(pointerToScanners.get(indexTempFile.getName()) == null){
+				nextElement = scanner.next();
+			}else{
+				nextElement = pointerToScanners.get(indexTempFile.getName());
+			}
+			
+
+			nextElement += "]";
+			nextElement = nextElement.substring(nextElement.indexOf("\""));
+
+			String currentTerm_id =nextElement.substring(nextElement.indexOf("\"")+1,nextElement.lastIndexOf("\""));
+			
+			if(term_id == Integer.parseInt(currentTerm_id)){
+				return nextElement.substring(nextElement.indexOf(":")+1);
+			}
+			
+			if(Integer.parseInt(currentTerm_id) > term_id){
+				pointerToScanners.put(indexTempFile.getName(), nextElement);
+				break;
+			}
+		}
+
+		return null;
+	}
+
+	private void clearMem()
+	{
+		_invertedIndex.clear();
+		_documents.clear();
+	}
+
+	private void saveIndexInFile()
+	{
+		System.out.println("Saving file "+fileId);
+
+		T3FileWriter fileWriter= new T3FileWriter(_options._indexPrefix+"/temp/index"+(fileId++)+".idx");
+		Gson gson = new Gson();
+		String json = gson.toJson(_invertedIndex);
+		fileWriter.write(json);
+		fileWriter.close();
+		
+		fileWriter= new T3FileWriter(_options._indexPrefix+"/tempDocument/doc"+(docId++)+".idx");
+		json = gson.toJson(_documents);
+		fileWriter.write(json);
+		fileWriter.close();
+		
+		clearMem();
 	}
 
 	/**
@@ -119,7 +260,7 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 		int numViews = 0;
 		Integer documentID = _documents.size();
 
-		DocumentIndexed doc = new DocumentIndexed(documentID, this);
+		DocumentIndexed doc = new DocumentIndexed(documentID, null);
 		doc.setTitle(title);
 		doc.setNumViews(numViews);
 		doc.setDocumentTokens(documentTokens);
@@ -134,8 +275,6 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 		for (Integer idx : uniqueTerms) {
 			_termDocFrequency.put(idx, _termDocFrequency.get(idx) + 1);
 		}
-
-
 	}
 
 	/**
@@ -184,7 +323,7 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 				if(!_invertedIndex.containsKey(idx)){
 					_invertedIndex.put(idx,new Postings());
 				}
-				
+
 				if(!_invertedIndex.get(idx).contains(documentID)){
 					_invertedIndex.get(idx).add(documentID);
 				}
@@ -244,7 +383,7 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 	public Document nextDoc(Query query, int docid) {
 
 		Vector<String> queryTerms = query._tokens;
-		
+
 		if(docid<0){
 			docid = 0;
 		}
@@ -327,7 +466,6 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 
 	@Override
 	public int documentTermFrequency(String term, String url) {
-		
 		int returnValue = 0;
 		int docID =  _docIds.get(url);
 		returnValue = _invertedIndex.get(_dictionary.get(term)).get_countTerm().get(docID);
@@ -339,8 +477,8 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 		// TODO Auto-generated method stub
 		return 0;
 	}
-	
-	
+
+
 	public String getTerm(int termId){
 		return _terms.get(termId);
 	}
