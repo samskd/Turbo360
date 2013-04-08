@@ -7,8 +7,6 @@ import java.util.Vector;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import com.sun.tools.internal.ws.processor.modeler.wsdl.PseudoSchemaBuilder;
-
 import edu.nyu.cs.cs2580.SearchEngine.Options;
 
 /**
