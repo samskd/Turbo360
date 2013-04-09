@@ -77,17 +77,22 @@ public class LogMinerNumviews extends LogMiner {
 		BufferedReader br = new BufferedReader(new FileReader(logFile));
 		String line;
 		int id=0;
-		
+		int temp = 0;
 		while ((line = br.readLine()) != null) {
 		   String[] lineSplit = line.split("\\s+");
 		   if(lineSplit.length == 3){
 			 //  id = pages.get(filter(lineSplit[1]));
 			   try{
 			   String in = URLDecoder.decode(lineSplit[1], "UTF-8");
-			   if(pages.containsKey(in))
+			  
+			   if(pages.containsKey(in)){
+				   //System.out.println(in);
 				   id = pages.get(in);
-			   //Modify lineSplit[1] to remove special characters
-			   numViews.put(id, numViews.get(id)+Integer.parseInt(lineSplit[2]));
+				   temp = numViews.get(id);
+				   //Modify lineSplit[1] to remove special characters
+				   numViews.put(id, temp +Integer.parseInt(lineSplit[2]));
+			   }
+			   
 			   } catch(IllegalArgumentException e){
 				   
 			   }

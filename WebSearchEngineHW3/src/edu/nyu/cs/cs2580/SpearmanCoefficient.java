@@ -97,7 +97,7 @@ public class SpearmanCoefficient {
 		
 		int pgVar = -1;
 		for(Integer i : sortedPageRankMap.keySet()){
-			pageRankArray[i-1] = ++pgVar;
+			pageRankArray[i] = ++pgVar;
 		}
 		int nmVar = -1;
 		for(Integer i : sortedNumViewsMap.keySet()){
@@ -107,11 +107,23 @@ public class SpearmanCoefficient {
 		double coeff = 0d;
 		double summation = 0d;
 		for(int i=0; i<numViewsArray.length;i++){
-			summation += (pageRankArray[i] - numViewsArray[i])^2;
+			summation += Math.pow((pageRankArray[i] - numViewsArray[i]),2);
 		}
-		int n = numViewsArray.length;
-		coeff = 1-((6*summation)/(n*(n^2-1)));
+		long n = numViewsArray.length;
+		//System.out.println(summation);
+		//System.out.println(Math.pow(n, 3)-n);
+		double denominator = Math.pow(n, 3)-n;
+		coeff = 1-((6*summation)/denominator);
 		return coeff;
+	}
+	
+	public static void main(String args[]){
+		String pg = args[0];
+		String nv = args[1];
+		SpearmanCoefficient sp = new SpearmanCoefficient();
+		System.out.println("Spearman Coefficent : " + sp.calculateSpearmanCoefficient(pg, nv));
+		
+		
 	}
 	
 }
