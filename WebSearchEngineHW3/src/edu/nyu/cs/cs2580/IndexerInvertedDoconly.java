@@ -84,6 +84,10 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 			for(File corpusFile :corpusDirectory.listFiles()){
 				processDocument(corpusFile);	
 				fileCount++;
+				
+				if(fileCount>3000){
+					break;
+				}
 
 				if(fileCount % 100 == 0){
 					saveIndexInFile();
@@ -183,23 +187,27 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 			String nextElement ;
 			if(pointerToScanners.get(indexTempFile.getName()) == null){
 				nextElement = scanner.next();
+				nextElement += "]";
+
 			}else{
 				nextElement = pointerToScanners.get(indexTempFile.getName());
 			}
 			
 
-			nextElement += "]";
 			nextElement = nextElement.substring(nextElement.indexOf("\""));
 
 			String currentTerm_id =nextElement.substring(nextElement.indexOf("\"")+1,nextElement.lastIndexOf("\""));
 			
 			if(term_id == Integer.parseInt(currentTerm_id)){
+				pointerToScanners.remove(indexTempFile.getName());
 				return nextElement.substring(nextElement.indexOf(":")+1);
 			}
 			
 			if(Integer.parseInt(currentTerm_id) > term_id){
 				pointerToScanners.put(indexTempFile.getName(), nextElement);
 				break;
+			}else{
+				System.out.println("If this line is showing up then something went terribly wrong....");
 			}
 		}
 
