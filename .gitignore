@@ -1,6 +1,8 @@
 
 WebSearchEngineHW3/data/wiki
 
+WebSearchEngineHW3/data/wiki264
+
 *.class
 
 WebSearchEngineHW3/data/.DS_Store
@@ -9,6 +11,8 @@ WebSearchEngineHW3/data/.DS_Store
 
 WebSearchEngineHW3/data/temp/*
 
+WebSearchEngineHW3/data/index/*
+
 WebSearchEngineHW3/data/corpus.graph
 
 WebSearchEngineHW3/data/wikitest/A
@@ -16,12 +20,6 @@ WebSearchEngineHW3/data/wikitest/A
 WebSearchEngineHW3/data/wikitest/B
 
 WebSearchEngineHW3/data/wikitest/C
-
-*.conf
-
-*.conf
-
-WebSearchEngineHW3/conf/engine.conf
 
 WebSearchEngineHW3/conf/engine.conf
 
@@ -36,3 +34,7 @@ WebSearchEngineHW3/data/prf/qr_bing_10_10
 WebSearchEngineHW3/data/prf/qr_bing_50_10
 
 WebSearchEngineHW3/numViews
+
+*.idx
+
+WebSearchEngineHW3/.classpath
