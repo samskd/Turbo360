@@ -58,6 +58,7 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 
 	private static int fileId = 1;
 	private static int docId = 1;
+	private static int documentsCount = 0;
 	private Map<String,Scanner> scanners= new HashMap<String,Scanner>();
 	private Map<String,String> pointerToScanners= new HashMap<String,String>();
 
@@ -85,7 +86,7 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 				processDocument(corpusFile);	
 				fileCount++;
 				
-				if(fileCount>3000){
+				if(fileCount>1000){
 					break;
 				}
 
@@ -116,7 +117,6 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 
 	private void mergeFile()
 	{
-
 		//Final index file
 		T3FileWriter indexWriter = new T3FileWriter(_options._indexPrefix+"/index.idx");
 
@@ -135,14 +135,16 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 
 				for(File indexTempFile :indexDirectory.listFiles())
 				{
-					if(scanners.get(indexTempFile.getName()) == null){
-						try {
+					if(scanners.get(indexTempFile.getName()) == null)
+					{
+						try 
+						{
 							Scanner scanner = new Scanner(indexTempFile);
 							scanner.useDelimiter("],");
 							scanners.put(indexTempFile.getName(),scanner);
 							
-						} catch (FileNotFoundException e) {
-							// TODO Auto-generated catch block
+						} catch (FileNotFoundException e) 
+						{
 							e.printStackTrace();
 						}
 					}
@@ -266,8 +268,9 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 
 		//no numViews for wiki docs
 		int numViews = 0;
-		Integer documentID = _documents.size();
-
+		//Integer documentID = _documents.size();
+		Integer documentID = documentsCount++;
+		
 		DocumentIndexed doc = new DocumentIndexed(documentID, null);
 		doc.setTitle(title);
 		doc.setNumViews(numViews);
