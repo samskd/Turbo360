@@ -11,6 +11,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -85,7 +86,7 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 			for(File corpusFile :corpusDirectory.listFiles()){
 				processDocument(corpusFile);	
 				fileCount++;
-				
+
 				if(fileCount>1000){
 					break;
 				}
@@ -127,13 +128,29 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 		{
 			indexWriter.write("{");
 			for(int  i = 0 ; i < _dictionary.size();i++){
-				
+
 				System.out.println("Merging indexes "+i+" out of "+_dictionary.size()+" terms");
 
 				//get posting list of term_id i from all the files and merge them
 				List<Integer> mergedPostingList = new ArrayList<Integer>();
 
-				for(File indexTempFile :indexDirectory.listFiles())
+				File[] files = indexDirectory.listFiles();
+
+				Comparator<File> comp = new Comparator<File>()
+				{
+					public int compare(File f1, File f2)
+					{
+						
+						// Alphabetic order otherwise
+						Integer fileIndex1 = Integer.parseInt(f1.getName().replaceFirst(".idx",""));
+						Integer fileIndex2 = Integer.parseInt(f2.getName().replaceFirst(".idx",""));
+						return fileIndex1.compareTo(fileIndex2);
+					}
+				};
+				Arrays.sort(files, comp); 
+
+
+				for(File indexTempFile : files)
 				{
 					if(scanners.get(indexTempFile.getName()) == null)
 					{
@@ -142,7 +159,7 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 							Scanner scanner = new Scanner(indexTempFile);
 							scanner.useDelimiter("],");
 							scanners.put(indexTempFile.getName(),scanner);
-							
+
 						} catch (FileNotFoundException e) 
 						{
 							e.printStackTrace();
@@ -170,6 +187,7 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 		}
 	}
 
+
 	public List<Integer> asList(int[] ints)
 	{
 		List<Integer> intList = new ArrayList<Integer>();
@@ -185,7 +203,7 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 		Scanner scanner = scanners.get(indexTempFile.getName());
 
 		while(scanner.hasNext()){
-			
+
 			String nextElement ;
 			if(pointerToScanners.get(indexTempFile.getName()) == null){
 				nextElement = scanner.next();
@@ -194,17 +212,17 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 			}else{
 				nextElement = pointerToScanners.get(indexTempFile.getName());
 			}
-			
+
 
 			nextElement = nextElement.substring(nextElement.indexOf("\""));
 
 			String currentTerm_id =nextElement.substring(nextElement.indexOf("\"")+1,nextElement.lastIndexOf("\""));
-			
+
 			if(term_id == Integer.parseInt(currentTerm_id)){
 				pointerToScanners.remove(indexTempFile.getName());
 				return nextElement.substring(nextElement.indexOf(":")+1);
 			}
-			
+
 			if(Integer.parseInt(currentTerm_id) > term_id){
 				pointerToScanners.put(indexTempFile.getName(), nextElement);
 				break;
@@ -226,17 +244,17 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 	{
 		System.out.println("Saving file "+fileId);
 
-		T3FileWriter fileWriter= new T3FileWriter(_options._indexPrefix+"/temp/index"+(fileId++)+".idx");
+		T3FileWriter fileWriter= new T3FileWriter(_options._indexPrefix+"/temp/"+(fileId++)+".idx");
 		Gson gson = new Gson();
 		String json = gson.toJson(_invertedIndex);
 		fileWriter.write(json);
 		fileWriter.close();
-		
+
 		fileWriter= new T3FileWriter(_options._indexPrefix+"/tempDocument/doc"+(docId++)+".idx");
 		json = gson.toJson(_documents);
 		fileWriter.write(json);
 		fileWriter.close();
-		
+
 		clearMem();
 	}
 
@@ -270,7 +288,7 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 		int numViews = 0;
 		//Integer documentID = _documents.size();
 		Integer documentID = documentsCount++;
-		
+
 		DocumentIndexed doc = new DocumentIndexed(documentID, null);
 		doc.setTitle(title);
 		doc.setNumViews(numViews);
