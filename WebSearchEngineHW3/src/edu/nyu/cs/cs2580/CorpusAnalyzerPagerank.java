@@ -231,7 +231,7 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 	@Override
 	public Object load() throws IOException {
 		System.out.println("Loading using " + this.getClass().getName());
-		Double[] pageRanks = null;
+		double[] pageRanks = null;
 
 		FileReader fileReader = new FileReader(pageRanksFile);
 		BufferedReader bufferedReader = new BufferedReader(fileReader);
@@ -239,7 +239,7 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 		try{
 
 			int totalPages = Integer.parseInt(bufferedReader.readLine());
-			pageRanks = new Double[totalPages];
+			pageRanks = new double[totalPages];
 
 			String line = null;
 			while((line = bufferedReader.readLine()) != null){
