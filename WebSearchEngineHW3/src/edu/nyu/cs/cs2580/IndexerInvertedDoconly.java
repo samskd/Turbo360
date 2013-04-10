@@ -57,11 +57,12 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 	// value is the number of documents the term appears in.
 	Map<Integer, Integer> _termDocFrequency = new HashMap<Integer, Integer>();
 
+	//used for merging indexes
 	private static int fileId = 1;
 	private static int docId = 1;
 	private static int documentsCount = 0;
-	private Map<String,Scanner> scanners= new HashMap<String,Scanner>();
-	private Map<String,String> pointerToScanners= new HashMap<String,String>();
+	private static Map<String,Scanner> scanners= new HashMap<String,Scanner>();
+	private static Map<String,String> pointerToScanners= new HashMap<String,String>();
 
 	public IndexerInvertedDoconly(Options options) {
 		super(options);
@@ -149,7 +150,6 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 				};
 				Arrays.sort(files, comp); 
 
-
 				for(File indexTempFile : files)
 				{
 					if(scanners.get(indexTempFile.getName()) == null)
@@ -167,9 +167,15 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 					}
 
 					String postingList = getPostingList(indexTempFile , i );
+					
 					//sample posting list = [1,2,3,4,5]
 					if(postingList != null){
 						try{
+							
+							if(postingList.charAt(postingList.length()-2)== '}'){
+								postingList = postingList.substring(0,postingList.length()-2);
+							}
+							
 							int[] intList = gson.fromJson(postingList, int[].class); 
 							mergedPostingList.addAll(asList(intList));
 						}catch(Exception e){
