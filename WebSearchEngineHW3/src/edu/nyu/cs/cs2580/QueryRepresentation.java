@@ -45,7 +45,7 @@ public class QueryRepresentation {
 		try{
 
 			String resultFile = prfFolder+"/qr_"+query._query+"_" +
-					numberOfDocumentsToBeConsidered+"_"+numberOfTerms + ".prf";
+					numberOfDocumentsToBeConsidered+"_"+numberOfTerms + ".tsv";
 
 			Vector<ScoredDocument> documents = _ranker.runQuery(query, numberOfDocumentsToBeConsidered);
 			long totalWords = 0;

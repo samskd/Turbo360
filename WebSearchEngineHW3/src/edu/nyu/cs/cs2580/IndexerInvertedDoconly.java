@@ -215,6 +215,7 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 			}
 		}
 
+		indexWriter.close();
 		//clean temp files 
 		deleteTempFiles();
 	}
@@ -512,7 +513,8 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 		String filepath = _options._indexPrefix+"/Documents/"+file_no+".idx";
 		T3FileReader fileReader = new T3FileReader(filepath);
 		String fileContents = fileReader.readAllBytes();
-
+		fileReader.close();
+		
 		Gson gson = new Gson();
 
 		JsonParser parser = new JsonParser();
@@ -624,7 +626,8 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 		String filepath = _options._indexPrefix+"/index/"+file_no+".idx";
 		T3FileReader fileReader = new T3FileReader(filepath);
 		String fileContents = fileReader.readAllBytes();
-
+		fileReader.close();
+		
 		GsonBuilder builder = new GsonBuilder();
 		Gson gson = builder.enableComplexMapKeySerialization().setPrettyPrinting().create();
 		Type type = new TypeToken<TreeMap<Integer,Postings>>(){}.getType();

@@ -11,7 +11,8 @@ public class StopWords {
 		if(stopWords == null)
 			populateStopWords();
 
-		return stopWords.contains(word);
+		//checks if its just a number or 
+		return word.matches("\\d+") || stopWords.contains(word);
 	}
 
 

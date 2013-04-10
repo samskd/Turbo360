@@ -333,6 +333,7 @@ public class IndexerInvertedCompressed extends Indexer {
 			}
 		}
 
+		indexWriter.close();
 		//clean temp files 
 		deleteTempFiles();
 	}
@@ -643,7 +644,8 @@ public class IndexerInvertedCompressed extends Indexer {
 		String filepath = _options._indexPrefix+"/Documents/"+file_no+".idx";
 		T3FileReader fileReader = new T3FileReader(filepath);
 		String fileContents = fileReader.readAllBytes();
-
+		fileReader.close();
+		
 		Gson gson = new Gson();
 
 		JsonParser parser = new JsonParser();
