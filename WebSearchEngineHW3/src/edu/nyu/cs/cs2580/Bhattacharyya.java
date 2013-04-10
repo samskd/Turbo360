@@ -14,15 +14,15 @@ import java.util.Set;
 
 public class Bhattacharyya {
 	
-	private String directoryPath;
-	File folder = new File(directoryPath);
-	private File[] files = folder.listFiles();
+	//private String directoryPath;
+	//File folder = new File(directoryPath);
+	//private File[] files = folder.listFiles();
 	
 	/**
 	 * Create Array of all files with extension .prf
 	 * @return
 	 */
-	private String[] createListOfFiles(){
+	/*private String[] createListOfFiles(){
 		String[] fileNames = new String[files.length];
 		int i=-1;
 		for(File f : files){
@@ -31,6 +31,7 @@ public class Bhattacharyya {
 		}
 		return fileNames;
 	}
+	*/
 	
 	private Map<String,String> inputFileToMap(String filename){
 		File file = new File(filename);
@@ -97,8 +98,7 @@ public class Bhattacharyya {
 	 * Calculates the Query Similarity
 	 */
 	public void querySimilarity(String inputFile, String outputFile){
-		@SuppressWarnings("unused")
-		String[] files = this.createListOfFiles();
+		//String[] files = this.createListOfFiles();
 		Map<String,String> queryAndPath = this.inputFileToMap(inputFile);
 		String[] filesFromMap = queryAndPath.keySet().toArray(new String[0]);
 		try{
@@ -116,7 +116,7 @@ public class Bhattacharyya {
 					 for(String s : keys){
 						 summation += Math.sqrt(map1.get(s)*map2.get(s));
 					 }
-					 bufferWriter.write(queryAndPath.get(filesFromMap[i]) + "\t" + queryAndPath.get(filesFromMap[j]) + "\t" + summation);
+					 bufferWriter.write(queryAndPath.get(filesFromMap[i]) + "\t" + queryAndPath.get(filesFromMap[j]) + "\t" + summation + "\n");
 					 //System.out.println(files[i] + "\\t" + files[j] + "\\t" + summation);
 				}
 			}
