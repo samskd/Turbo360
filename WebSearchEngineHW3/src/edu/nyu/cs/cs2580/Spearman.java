@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class SpearmanCoefficient {
+public class Spearman {
 	
 	private Map<Integer,Double> pageRankMap = new HashMap<Integer,Double>();
 	private Map<Integer,Integer> numViewsMap = new HashMap<Integer,Integer>();
@@ -120,8 +120,8 @@ public class SpearmanCoefficient {
 	public static void main(String args[]){
 		String pg = args[0];
 		String nv = args[1];
-		SpearmanCoefficient sp = new SpearmanCoefficient();
-		System.out.println("Spearman Coefficent : " + sp.calculateSpearmanCoefficient(pg, nv));
+		Spearman sp = new Spearman();
+		System.out.println("Spearman's Coefficent : " + sp.calculateSpearmanCoefficient(pg, nv));
 		
 		
 	}

@@ -155,7 +155,7 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 		FileReader fileReader = new FileReader(graphFile);
 		BufferedReader graphReader = new BufferedReader(fileReader);
 
-		int numberofIterations = 1;
+		int numberofIterations = 2;
 		double lambda = 0.1;
 
 		try{
