@@ -475,8 +475,26 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 
 	@Override
 	public Document getDoc(int docid) {
+		
+		//check if it's available
+		for(int i = 0 ; i< _documents.size(); i++){
+			if(_documents.get(i)._docid == docid){
+				return _documents.get(i);
+			}
+		}
+		
+		//if not then retrieve from backend store
 		_documents = getDocuments(docid);
-		return (/*docid >= _documents.size() ||*/ docid < 0) ? null : _documents.get(docid);
+
+		//again check if its available
+		for(int i = 0 ; i< _documents.size(); i++){
+			if(_documents.get(i)._docid == docid){
+				return _documents.get(i);
+			}
+		}
+		
+		return null;
+		//return (/*docid >= _documents.size() ||*/ docid < 0) ? null : _documents.get(docid);
 	}
 
 	private Vector<Document> getDocuments(int docid2) {
@@ -552,9 +570,11 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 	 * @return
 	 */
 	private int next (String term , int current){
-
-
-		Postings postingList = _invertedIndex.get(_dictionary.get(term));
+		
+		Postings postingList = null;
+		if(_invertedIndex != null && _dictionary != null && _dictionary.get(term) != null){
+			postingList = _invertedIndex.get(_dictionary.get(term));
+		}
 		if(postingList == null){
 			_invertedIndex = getIndex(_dictionary.get(term));
 		}
