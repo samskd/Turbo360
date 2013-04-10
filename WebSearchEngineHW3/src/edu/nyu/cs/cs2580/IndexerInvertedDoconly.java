@@ -72,6 +72,8 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 
 	private final double[] pageRanks;
 	private final Map<Integer, Integer> numViews;
+	
+	Map<Integer, Postings> postingLists = new HashMap<Integer, Postings>();
 
 	public IndexerInvertedDoconly(Options options) {
 		super(options);
@@ -554,9 +556,8 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 
 		//case 2 
 		boolean documentFound = true;
-
-		for(int i = 0 ; i < docIds.size() -1 ; i++){
-			if(docIds.get(i) != docIds.get(i+1)){
+		for(int i = 0 ; i < docIds.size() ; i++){
+			if(docIds.get(i) != docIds.get(0)){
 				documentFound = false;
 				break;
 			}
@@ -580,18 +581,24 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 	 * @param docid 
 	 * @return
 	 */
-	private int next (String term , int current){
+	private int next (String term , int currentDoc){
 
 		Postings postingList = null;
-		if(_invertedIndex != null && _dictionary != null && _dictionary.get(term) != null){
-			postingList = _invertedIndex.get(_dictionary.get(term));
+		Integer termID = _dictionary.get(term);
+
+		if(postingLists.containsKey(termID)){
+			postingList = postingLists.get(termID);
+		} else if(_invertedIndex != null && _dictionary != null && termID != null){
+			postingList = _invertedIndex.get(termID);
+			postingLists.put(termID, postingList);
 		}
+		
 		if(postingList == null){
-			_invertedIndex = getIndex(_dictionary.get(term));
+			_invertedIndex = getIndex(termID);
+			postingList = _invertedIndex.get(termID);
+			postingLists.put(termID, postingList);
 		}
-		postingList = _invertedIndex.get(_dictionary.get(term));
-
-
+		
 		Integer lt = postingList.size();
 		Integer ct = postingList.getCachedIndex();
 
@@ -600,21 +607,21 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 			postingList.setCachedIndex(ct);
 		}
 
-		boolean isExit = postingList.get(lt-1) <= current;
+		boolean isExit = postingList.get(lt-1) <= currentDoc;
 		if(lt == 0 || isExit){
 			return Integer.MAX_VALUE;
 		}
 
-		if(postingList.get(1) > current){
-			postingList.setCachedIndex(1);
-			return postingList.get(ct);
+		if(postingList.get(0) > currentDoc){
+			postingList.setCachedIndex(0);
+			return postingList.get(0);
 		}
 
-		if(ct > 1 && postingList.get(ct-1) > current){
-			postingList.setCachedIndex(1);
+		if(ct > 0 && postingList.get(ct-1) > currentDoc){
+			postingList.setCachedIndex(0);
 		}
 
-		while(postingList.get(ct) <= current){
+		while(postingList.get(ct) <= currentDoc){
 			ct = ct + 1;
 		}
 		return postingList.get(ct);
