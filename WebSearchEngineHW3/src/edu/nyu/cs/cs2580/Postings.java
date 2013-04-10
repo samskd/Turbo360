@@ -47,7 +47,7 @@ public class Postings extends Vector<Integer> implements Serializable
 		for(Integer termID : this){
 
 			if(!_ct_terms.containsKey(termID)){
-				_ct_terms.put(termID, 0);//initalize to zero
+				_ct_terms.put(termID, 1);//initalize to zero
 			}else{
 				//increment count
 				_ct_terms.put(termID,_ct_terms.get(termID)+1);

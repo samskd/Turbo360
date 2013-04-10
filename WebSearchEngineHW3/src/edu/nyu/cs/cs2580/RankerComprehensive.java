@@ -30,7 +30,7 @@ public class RankerComprehensive extends Ranker {
 
 		while ((doc = (DocumentIndexed)_indexer.nextDoc(query, docid)) != null) {
 			//Scoring the document
-			rankQueue.add(new ScoredDocument(doc,this.getScore(query, doc)+doc.getNumViews()+doc.getPageRank()));
+			rankQueue.add(new ScoredDocument(doc,this.getScore(query, doc)+0.2*doc.getNumViews()+doc.getPageRank()));
 			if (rankQueue.size() > numResults) {
 				rankQueue.poll();
 			}
