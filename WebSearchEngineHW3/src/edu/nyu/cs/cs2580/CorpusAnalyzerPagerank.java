@@ -209,9 +209,11 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 
 				--numberofIterations;
 				graphReader.close();
+				fileReader.close();
 				
 				//reset the graph file to start reading from the start
 				if(numberofIterations > 0){
+					fileReader = new FileReader(graphFile);
 					graphReader = new BufferedReader(fileReader);
 					graphReader.readLine(); //skip the first line.
 				}
