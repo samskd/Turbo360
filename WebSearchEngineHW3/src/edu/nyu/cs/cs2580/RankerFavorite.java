@@ -31,13 +31,17 @@ public class RankerFavorite extends Ranker {
 		DocumentIndexed doc = null;
 		int docid = -1;
 
-		while ((doc = (DocumentIndexed)_indexer.nextDoc(query, docid)) != null) {
-			//Scoring the document
-			rankQueue.add(new ScoredDocument(doc, this.getScore(query, doc)));
-			if (rankQueue.size() > numResults) {
-				rankQueue.poll();
+		try{
+			while ((doc = (DocumentIndexed)_indexer.nextDoc(query, docid)) != null) {
+				//Scoring the document
+				rankQueue.add(new ScoredDocument(doc, this.getScore(query, doc)));
+				if (rankQueue.size() > numResults) {
+					rankQueue.poll();
+				}
+				docid = doc._docid;
 			}
-			docid = doc._docid;
+		}catch(Exception e){
+			e.printStackTrace();
 		}
 
 		Vector<ScoredDocument> results = new Vector<ScoredDocument>();
@@ -67,7 +71,7 @@ public class RankerFavorite extends Ranker {
 
 			String queryTerm = qv.get(i);
 			boolean isPhraseQuery = false;
-			
+
 			Query phraseToken = null;
 			if(queryTerm.indexOf("\\s+") != -1){
 				isPhraseQuery = true;

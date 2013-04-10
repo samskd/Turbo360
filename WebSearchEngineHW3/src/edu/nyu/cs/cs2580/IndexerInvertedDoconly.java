@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -20,12 +21,16 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.Vector;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
 
 import edu.nyu.cs.cs2580.SearchEngine.Options;
+import edu.nyu.cs.cs2580.FileManager.T3FileReader;
 import edu.nyu.cs.cs2580.FileManager.T3FileWriter;
-import com.google.gson.Gson;
 
 /**
  * @CS2580: Implement this class for HW2.
@@ -89,10 +94,6 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 				processDocument(corpusFile);	
 				fileCount++;
 
-				if(fileCount>1000){
-					break;
-				}
-
 				if(fileCount % 100 == 0){
 					saveIndexInFile();
 				}
@@ -121,7 +122,7 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 	private void mergeFile()
 	{
 		//Final index file
-		T3FileWriter indexWriter = new T3FileWriter(_options._indexPrefix+"/Index/index"+(finalIndexCount++)+".idx");
+		T3FileWriter indexWriter = new T3FileWriter(_options._indexPrefix+"/index/"+(finalIndexCount++)+".idx");
 
 		File indexDirectory = new File(_options._indexPrefix+"/temp");
 		Gson gson = new Gson();
@@ -189,7 +190,7 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 				if(i%1000 == 0 && i >0 ){
 					indexWriter.write("}");
 					indexWriter.close();
-					indexWriter = new T3FileWriter(_options._indexPrefix+"/Index/index"+(finalIndexCount++)+".idx");
+					indexWriter = new T3FileWriter(_options._indexPrefix+"/index/"+(finalIndexCount++)+".idx");
 					indexWriter.write("{");
 				}
 				String entry = "\""+i+"\""+":"+gson.toJson(mergedPostingList);
@@ -197,7 +198,7 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 				if((i+1)%1000 != 0){
 					indexWriter.write(",");
 				}
-				
+
 				if(i == _dictionary.size() -1){
 					indexWriter.write("}");
 					indexWriter.close();
@@ -322,7 +323,7 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 		fileWriter.write(json);
 		fileWriter.close();
 
-		fileWriter= new T3FileWriter(_options._indexPrefix+"/Documents/doc"+(docId++)+".idx");
+		fileWriter= new T3FileWriter(_options._indexPrefix+"/Documents/"+(docId++)+".idx");
 		json = gson.toJson(_documents);
 		fileWriter.write(json);
 		fileWriter.close();
@@ -474,7 +475,29 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 
 	@Override
 	public Document getDoc(int docid) {
-		return (docid >= _documents.size() || docid < 0) ? null : _documents.get(docid);
+		_documents = getDocuments(docid);
+		return (/*docid >= _documents.size() ||*/ docid < 0) ? null : _documents.get(docid);
+	}
+
+	private Vector<Document> getDocuments(int docid2) {
+		
+		int file_no = (int)docid2 /100 + 1;
+		String filepath = _options._indexPrefix+"/Documents/"+file_no+".idx";
+		T3FileReader fileReader = new T3FileReader(filepath);
+		String fileContents = fileReader.readAllBytes();
+		
+		Gson gson = new Gson();
+		
+		JsonParser parser = new JsonParser();
+	    JsonArray array = parser.parse(fileContents).getAsJsonArray();
+	    
+	    Vector<Document> retVal = new Vector<Document>();
+	    for(int i =0;i<array.size();i++){
+		    DocumentIndexed doc = gson.fromJson(array.get(i), DocumentIndexed.class);
+		    retVal.add(doc);
+	    }
+	
+		return retVal;
 	}
 
 	/**
@@ -530,10 +553,21 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 	 */
 	private int next (String term , int current){
 
+
 		Postings postingList = _invertedIndex.get(_dictionary.get(term));
+		if(postingList == null){
+			_invertedIndex = getIndex(_dictionary.get(term));
+		}
+		postingList = _invertedIndex.get(_dictionary.get(term));
+
 
 		Integer lt = postingList.size();
 		Integer ct = postingList.getCachedIndex();
+		
+		if(ct == null){
+			ct = 0;
+			postingList.setCachedIndex(ct);
+		}
 
 		boolean isExit = postingList.get(lt-1) <= current;
 		if(lt == 0 || isExit){
@@ -555,8 +589,27 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 		return postingList.get(ct);
 	}
 
+	private Map<Integer, Postings> getIndex(Integer integer) {
+
+		int file_no = (int)integer /1000 + 1;
+		String filepath = _options._indexPrefix+"/index/"+file_no+".idx";
+		T3FileReader fileReader = new T3FileReader(filepath);
+		String fileContents = fileReader.readAllBytes();
+		
+        GsonBuilder builder = new GsonBuilder();
+		Gson gson = builder.enableComplexMapKeySerialization().setPrettyPrinting().create();
+        Type type = new TypeToken<TreeMap<Integer,Postings>>(){}.getType();
+        TreeMap<Integer,Postings> treeMap = gson.fromJson(fileContents, type);
+
+		return treeMap;
+	}
+
 	@Override
 	public int corpusDocFrequencyByTerm(String term) {
+		Postings p = _invertedIndex.get(_dictionary.get(term));
+		if(p == null){
+			_invertedIndex = getIndex(_dictionary.get(term));
+		}
 		return _invertedIndex.get(_dictionary.get(term)).size();
 	}
 
@@ -569,6 +622,12 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 	public int documentTermFrequency(String term, String url) {
 		int returnValue = 0;
 		int docID =  _docIds.get(url);
+		
+		Postings p = _invertedIndex.get(_dictionary.get(term));
+		if(p == null){
+			_invertedIndex = getIndex(_dictionary.get(term));
+		}
+		
 		returnValue = _invertedIndex.get(_dictionary.get(term)).get_countTerm().get(docID);
 		return returnValue;
 	}
