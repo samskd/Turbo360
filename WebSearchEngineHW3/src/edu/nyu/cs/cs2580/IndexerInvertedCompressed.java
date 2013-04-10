@@ -85,6 +85,9 @@ public class IndexerInvertedCompressed extends Indexer {
 
 	private final double[] pageRanks;
 	private final Map<Integer, Integer> numViews;
+	
+	Map<Integer, PostingsWithOccurences<String>> postingLists = 
+			new HashMap<Integer, PostingsWithOccurences<String>>();
 
 	// Maps each term to their posting list
 	private HashMap<Integer, PostingsWithOccurences<String>>  _invertedIndexWithCompresion = 
@@ -693,9 +696,8 @@ public class IndexerInvertedCompressed extends Indexer {
 
 		//case 2 
 		boolean documentFound = true;
-
-		for(int i = 0 ; i < docIds.size()-1 ; i++) {
-			if(docIds.get(i) != docIds.get(i+1)){
+		for(int i = 0 ; i < docIds.size() ; i++) {
+			if(docIds.get(i) != docIds.get(0)){
 				documentFound = false;
 				break;
 			}
@@ -719,12 +721,13 @@ public class IndexerInvertedCompressed extends Indexer {
 	 * @param docid 
 	 * @return
 	 */
-	private int next(String term , int current) {
+	private int next(String term , int currentDoc) {
 
 		if(!_dictionary.containsKey(term))
 			return INFINITY;
 
 		PostingsWithOccurences<String> postingList = null;
+<<<<<<< HEAD
 		if(_invertedIndexWithCompresion != null && _dictionary != null && _dictionary.get(term) != null){
 			_invertedIndexWithCompresion.get(_dictionary.get(term));
 		}
@@ -735,28 +738,40 @@ public class IndexerInvertedCompressed extends Indexer {
 		postingList = 
 			_invertedIndexWithCompresion.get(_dictionary.get(term));
 
+=======
+		int termID = _dictionary.get(term);
+		
+		if(postingLists.containsKey(termID)){
+			postingList = postingLists.get(termID);
+		}else{
+			postingList = _invertedIndexWithCompresion.getPostingList(termID);
+			postingLists.put(termID, postingList);
+		}
+>>>>>>> 76d86c01b86c86e6dd77ca03ad211ea675e32d8a
 
 		Integer lt = postingList.size();
 		Integer ct = postingList.getCachedIndex();
 
-		if(lt == 0 || ((PostingEntry<String>) postingList.get(lt-1)).getDocID() <= current) {
+		if(lt == 0 || postingList.get(lt-1).getDocID() <= currentDoc) {
 			return INFINITY;
 		}
 
-		if(((PostingEntry<String>) postingList.get(0)).getDocID() > current) {
+		if(postingList.get(0).getDocID() > currentDoc) {
 			postingList.setCachedIndex(0);
-			return ((PostingEntry<String>) postingList.get(0)).getDocID();
+			return postingList.get(0).getDocID();
 		}
 
-		if(ct > 0 && ((PostingEntry<String>) postingList.get(ct-1)).getDocID() > current) {
+		if(ct > 0 && postingList.get(ct-1).getDocID() > currentDoc) {
 			ct = 0;
 		}
 
-		while(((PostingEntry<String>) postingList.get(ct)).getDocID() <= current) {
+		while(postingList.get(ct).getDocID() <= currentDoc) {
 			ct++;
 		}
-
-		return ((PostingEntry<String>) postingList.get(ct)).getDocID();
+		
+		postingList.setCachedIndex(ct);
+		
+		return postingList.get(ct).getDocID();
 	}
 
 	private HashMap<Integer, PostingsWithOccurences<String>> getIndex(Integer integer) {
@@ -831,17 +846,15 @@ public class IndexerInvertedCompressed extends Indexer {
 
 
 		PostingsWithOccurences<String> postingList = null;
-		if(_invertedIndexWithCompresion != null && _dictionary != null && _dictionary.get(term) != null){
-			_invertedIndexWithCompresion.get(_dictionary.get(term));
+		int termID = _dictionary.get(term);
+		
+		if(postingLists.containsKey(termID)){
+			postingList = postingLists.get(termID);
+		}else{
+			postingList = _invertedIndexWithCompresion.get(termID);
+			postingLists.put(termID, postingList);
 		}
-		if(postingList == null){
-			_invertedIndexWithCompresion =  getIndex(_dictionary.get(term));
-		}
-
-		postingList = 
-			_invertedIndexWithCompresion.get(_dictionary.get(term));
-
-
+		
 		PostingEntry<String> documentEntry = postingList.searchDocumentID(docId);
 
 		if(documentEntry != null && documentEntry.getDocID() == docId){

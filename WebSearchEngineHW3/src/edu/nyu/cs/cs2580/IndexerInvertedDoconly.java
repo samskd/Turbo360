@@ -537,6 +537,7 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 	@Override
 	public Document nextDoc(Query query, int docid) {
 
+		System.out.println("NextDoc -> "+docid);
 		Vector<String> queryTerms = query._tokens;
 
 		if(docid<0){
@@ -571,7 +572,7 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 		//case 3 
 		Integer maxDocID = Collections.max(docIds);
 
-		return nextDoc(query,maxDocID-1);
+		return nextDoc(query, maxDocID-1);
 	}
 
 	/**
@@ -618,12 +619,15 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 		}
 
 		if(ct > 0 && postingList.get(ct-1) > currentDoc){
+			ct=0;
 			postingList.setCachedIndex(0);
 		}
 
 		while(postingList.get(ct) <= currentDoc){
 			ct = ct + 1;
 		}
+		
+		postingList.setCachedIndex(ct);
 		return postingList.get(ct);
 	}
 
