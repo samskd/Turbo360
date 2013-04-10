@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -171,7 +172,7 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 
 
 			while(numberofIterations > 0){
-
+				
 				//each page has lambda/totalpages chance of random selection.
 				for(int i=0; i<resultingPageRank.length; i++){
 					resultingPageRank[i] = lambda/totalPages;
@@ -207,6 +208,14 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 				}
 
 				--numberofIterations;
+				graphReader.close();
+				
+				//reset the graph file to start reading from the start
+				if(numberofIterations > 0){
+					graphReader = new BufferedReader(fileReader);
+					graphReader.readLine(); //skip the first line.
+				}
+				
 			}
 
 			//write all pageranks to file
