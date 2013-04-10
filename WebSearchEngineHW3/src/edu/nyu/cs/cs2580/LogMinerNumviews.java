@@ -26,8 +26,6 @@ public class LogMinerNumviews extends LogMiner {
 
   
   final int linksBlockSize = 2000;
-  final String tempFolder = "data/temp1/";
-  final String pageRanksFile = "data/numviews";
   final String logFile = "data/log/20130301-160000.log";
   final String outputFile = "numViews";
   
