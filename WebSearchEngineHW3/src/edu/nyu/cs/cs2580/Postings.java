@@ -21,7 +21,7 @@ public class Postings extends Vector<Integer> implements Serializable
 	public boolean add(Integer e){
 		
 		if(!_countTerm.containsKey(e)){
-			_countTerm.put(e, 0);//initalize to zero
+			_countTerm.put(e, 1);//initalize to zero
 		}else{
 			//increment count
 			_countTerm.put(e,_countTerm.get(e)+1);

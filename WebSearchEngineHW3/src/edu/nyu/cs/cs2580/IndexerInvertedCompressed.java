@@ -226,6 +226,10 @@ public class IndexerInvertedCompressed extends Indexer {
 
 			processDocument(file, documentProcessor);
 			fileCount++;
+			
+			if(fileCount > 100){
+				break;
+			}
 
 			if(fileCount % 100 == 0){
 				saveIndexInFile();
@@ -255,7 +259,7 @@ public class IndexerInvertedCompressed extends Indexer {
 		//Final index file
 		T3FileWriter indexWriter = new T3FileWriter(_options._indexPrefix+"/Comp_index/"+(finalIndexCount++)+".idx");
 
-		File indexDirectory = new File(_options._indexPrefix+"/temp");
+		File indexDirectory = new File(_options._indexPrefix+"/Comp_temp");
 		Gson gson = new Gson();
 
 		if(indexDirectory.isDirectory())
@@ -421,7 +425,7 @@ public class IndexerInvertedCompressed extends Indexer {
 
 			nextElement = nextElement.substring(nextElement.indexOf("\""));
 
-			String currentTerm_id =nextElement.substring(nextElement.indexOf("\"")+1,nextElement.lastIndexOf("\""));
+			String currentTerm_id =nextElement.substring(nextElement.indexOf("\"")+1,nextElement.indexOf(("\""),1));
 
 			if(term_id == Integer.parseInt(currentTerm_id)){
 				pointerToScanners.remove(indexTempFile.getName());
