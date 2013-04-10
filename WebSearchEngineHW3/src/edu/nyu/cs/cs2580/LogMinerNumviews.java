@@ -118,7 +118,8 @@ public class LogMinerNumviews extends LogMiner {
     return;
   }
   
-  private String filter(String in){
+  @SuppressWarnings("unused")
+private String filter(String in){
 	  in = in.trim();
 	  StringBuilder modified = new StringBuilder();
 	  String tempStr = "";
