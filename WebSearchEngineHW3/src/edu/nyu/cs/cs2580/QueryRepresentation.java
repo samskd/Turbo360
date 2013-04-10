@@ -45,7 +45,7 @@ public class QueryRepresentation {
 		try{
 
 			String resultFile = prfFolder+"/qr_"+query._query+"_" +
-					numberOfDocumentsToBeConsidered+"_"+numberOfTerms;
+					numberOfDocumentsToBeConsidered+"_"+numberOfTerms + ".prf";
 
 			Vector<ScoredDocument> documents = _ranker.runQuery(query, numberOfDocumentsToBeConsidered);
 			long totalWords = 0;
@@ -130,7 +130,6 @@ public class QueryRepresentation {
 			if(bufferedReader != null) bufferedReader.close();
 			if(bufferedWriter != null) bufferedWriter.close();
 		}
-
 
 		return output.toString();
 	}

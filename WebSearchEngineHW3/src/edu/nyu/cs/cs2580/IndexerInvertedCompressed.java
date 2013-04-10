@@ -489,7 +489,6 @@ public class IndexerInvertedCompressed extends Indexer {
 			documentTokens.addAll(titleTokens);
 
 			String title = file.getName();
-			//no numViews for wiki docs
 
 			Integer documentID = documentsCount++;
 			int numView = numViews.get(documentID);
