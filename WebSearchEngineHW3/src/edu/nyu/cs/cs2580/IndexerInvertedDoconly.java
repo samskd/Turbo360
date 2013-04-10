@@ -667,13 +667,13 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 			_invertedIndex = getIndex(_dictionary.get(term));
 		}
 
-		returnValue = _invertedIndex.get(_dictionary.get(term)).get_countTerm().get(docID);
+		HashMap<Integer,Integer> count_terms = _invertedIndex.get(_dictionary.get(term)).get_countTerm();
+		returnValue = count_terms.get(docID);
 		return returnValue;
 	}
 
 	@Override
 	public int nextPhrase(Query query, int docid, int position) {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
