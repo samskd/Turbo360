@@ -9,8 +9,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Set;
 
+import edu.nyu.cs.cs2580.FileManager.T3FileWriter;
 
-public class IndexWrapper extends HashMap<Integer, PostingsWithOccurences>{
+
+public class IndexWrapper extends HashMap<Integer, PostingsWithOccurences<String>>{
 
 	private static final long serialVersionUID = 6127445645999471161L;
 
