@@ -63,6 +63,7 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 	private static int documentsCount = 0;
 	private static Map<String,Scanner> scanners= new HashMap<String,Scanner>();
 	private static Map<String,String> pointerToScanners= new HashMap<String,String>();
+	private static int finalIndexCount = 1;
 
 	public IndexerInvertedDoconly(Options options) {
 		super(options);
@@ -120,7 +121,7 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 	private void mergeFile()
 	{
 		//Final index file
-		T3FileWriter indexWriter = new T3FileWriter(_options._indexPrefix+"/index.idx");
+		T3FileWriter indexWriter = new T3FileWriter(_options._indexPrefix+"/Index/index"+(finalIndexCount++)+".idx");
 
 		File indexDirectory = new File(_options._indexPrefix+"/temp");
 		Gson gson = new Gson();
@@ -141,7 +142,7 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 				{
 					public int compare(File f1, File f2)
 					{
-						
+
 						// Alphabetic order otherwise
 						Integer fileIndex1 = Integer.parseInt(f1.getName().replaceFirst(".idx",""));
 						Integer fileIndex2 = Integer.parseInt(f2.getName().replaceFirst(".idx",""));
@@ -167,15 +168,15 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 					}
 
 					String postingList = getPostingList(indexTempFile , i );
-					
+
 					//sample posting list = [1,2,3,4,5]
 					if(postingList != null){
 						try{
-							
+
 							if(postingList.charAt(postingList.length()-2)== '}'){
 								postingList = postingList.substring(0,postingList.length()-2);
 							}
-							
+
 							int[] intList = gson.fromJson(postingList, int[].class); 
 							mergedPostingList.addAll(asList(intList));
 						}catch(Exception e){
@@ -185,11 +186,76 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 				}
 
 				//Write the merger list to file i
+				if(i%1000 == 0 && i >0 ){
+					indexWriter.write("}");
+					indexWriter.close();
+					indexWriter = new T3FileWriter(_options._indexPrefix+"/Index/index"+(finalIndexCount++)+".idx");
+					indexWriter.write("{");
+				}
 				String entry = "\""+i+"\""+":"+gson.toJson(mergedPostingList);
 				indexWriter.write(entry);
-				indexWriter.write(",");
+				if((i+1)%1000 != 0){
+					indexWriter.write(",");
+				}
+				
+				if(i == _dictionary.size() -1){
+					indexWriter.write("}");
+					indexWriter.close();
+				}
 			}
-			indexWriter.write("}");
+		}
+
+		//clean temp files 
+		deleteTempFiles();
+	}
+
+
+	private void deleteTempFiles() 
+	{
+		File directory = new File(_options._indexPrefix+"/temp");
+		try{
+			delete(directory);
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+
+	public static void delete(File file) throws IOException{
+
+		if(file.isDirectory()){
+
+			//directory is empty, then delete it
+			if(file.list().length==0){
+
+				file.delete();
+				System.out.println("Directory is deleted : " 
+						+ file.getAbsolutePath());
+
+			}else{
+
+				//list all the directory contents
+				String files[] = file.list();
+
+				for (String temp : files) {
+					//construct the file structure
+					File fileDelete = new File(file, temp);
+
+					//recursive delete
+					delete(fileDelete);
+				}
+
+				//check the directory again, if empty then delete it
+				if(file.list().length==0){
+					file.delete();
+					System.out.println("Directory is deleted : " 
+							+ file.getAbsolutePath());
+				}
+			}
+
+		}else{
+			//if file, then delete it
+			file.delete();
+			System.out.println("File is deleted : " + file.getAbsolutePath());
 		}
 	}
 
@@ -256,7 +322,7 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable
 		fileWriter.write(json);
 		fileWriter.close();
 
-		fileWriter= new T3FileWriter(_options._indexPrefix+"/tempDocument/doc"+(docId++)+".idx");
+		fileWriter= new T3FileWriter(_options._indexPrefix+"/Documents/doc"+(docId++)+".idx");
 		json = gson.toJson(_documents);
 		fileWriter.write(json);
 		fileWriter.close();
