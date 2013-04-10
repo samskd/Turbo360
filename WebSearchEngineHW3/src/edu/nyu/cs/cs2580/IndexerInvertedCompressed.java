@@ -727,27 +727,15 @@ public class IndexerInvertedCompressed extends Indexer {
 			return INFINITY;
 
 		PostingsWithOccurences<String> postingList = null;
-<<<<<<< HEAD
-		if(_invertedIndexWithCompresion != null && _dictionary != null && _dictionary.get(term) != null){
-			_invertedIndexWithCompresion.get(_dictionary.get(term));
-		}
-		if(postingList == null){
-			_invertedIndexWithCompresion =  getIndex(_dictionary.get(term));
-		}
 
-		postingList = 
-			_invertedIndexWithCompresion.get(_dictionary.get(term));
-
-=======
 		int termID = _dictionary.get(term);
 		
 		if(postingLists.containsKey(termID)){
 			postingList = postingLists.get(termID);
 		}else{
-			postingList = _invertedIndexWithCompresion.getPostingList(termID);
+			postingList = _invertedIndexWithCompresion.get(termID);
 			postingLists.put(termID, postingList);
 		}
->>>>>>> 76d86c01b86c86e6dd77ca03ad211ea675e32d8a
 
 		Integer lt = postingList.size();
 		Integer ct = postingList.getCachedIndex();
